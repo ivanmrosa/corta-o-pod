@@ -2,13 +2,17 @@ import os
 from pytube import YouTube
 from moviepy.editor import VideoFileClip, AudioFileClip
 import logging
+from env import Env
+from google_api import GoogleApi
+from youtube_transcript_api.formatters import SRTFormatter
 
-
-class YouTubeVideHandler:
+class YouTubeVideoHandler:
 
     def __init__(self, videoLink: str, baseDirectory: str) -> None:
         self.__youtubeObject = YouTube(videoLink)
         self.__baseDirectory = baseDirectory
+        self.__env = Env()
+        self.__googleApi = GoogleApi()
 
     def downloadAudio(self) -> AudioFileClip:
         audioFileName = os.path.join(
@@ -18,7 +22,7 @@ class YouTubeVideHandler:
         audioFiles.get_by_itag(audio160Kbps).download(filename=audioFileName)
         return AudioFileClip(audioFileName)
 
-    def downloadVideo(self) -> str:
+    def downloadVideo(self, insertAudio: bool) -> str:
         fullHdTag = 137
 
         videoFileName = os.path.join(
@@ -32,30 +36,60 @@ class YouTubeVideHandler:
             download(filename=os.path.join(self.__baseDirectory,
                      f'{self.__youtubeObject.title}.mp4'))
 
-        videoClip = VideoFileClip(videoFileName)
-        audioClip = self.downloadAudio()
-
-        finalVideoClip: VideoFileClip = videoClip.set_audio(audioClip)
+        videoClip : VideoFileClip = VideoFileClip(videoFileName)
+        finalVideoClip : VideoFileClip  = None;     
+        audioClip : AudioFileClip = None 
+        
+        if insertAudio:
+            audioClip : AudioFileClip = self.downloadAudio()            
+            finalVideoClip = self.linkAudioToVideo(videoFileClip=videoClip, audioFileClip=audioClip, removeAudioFromFilesystem=True)        
+        else: 
+            finalVideoClip = videoClip
+        
         finalVideoClip.write_videofile(finalVideoFileName)
+        if audioClip:
+            self.removeAudioFile(audioClip)
+        # finalVideoClip: VideoFileClip = videoClip.set_audio(audioClip)
+         
 
-        audioFilename = audioClip.filename
-        audioClip.close()
-        os.remove(audioFilename)
+        # audioFilename = audioClip.filename
+        # audioClip.close()
+        # os.remove(audioFilename)
+        
+        
         videoClip.close()
         os.remove(videoFileName)
+    
+    def removeAudioFile(self, audioFileClip: AudioFileClip):
+        audioFileClip.close()
+        os.remove(audioFileClip.filename)
 
-    def downloadCaption(self, languageCode='pt-br') -> str:
+
+    def linkAudioToVideo(self, videoFileClip: VideoFileClip, audioFileClip: AudioFileClip, removeAudioFromFilesystem: bool) -> VideoFileClip:
+        result = videoFileClip.set_audio(audioFileClip)        
+        # if removeAudioFromFilesystem:
+        #     audioFileClip.close()
+        #     os.remove(audioFileClip.filename)
+        return result
+
+
+    def downloadCaption(self, languageCode='pt') ->str:
+        '''
+          return (filePathTxt, filePathSTR)
+        '''
         try:
-            filePath: str = os.path.join(
+
+            filePathSTR: str = os.path.join(
                 self.__baseDirectory, f'{self.__youtubeObject.title}.str'
             )
-            print(self.__youtubeObject.captions)
-            caption = self.__youtubeObject.captions.\
-                get_by_language_code(languageCode).\
-                generate_srt_captions()
-            with open(filePath, 'w') as file:
-                file.writelines(caption)
-            return filePath
+            
+            caption = self.__googleApi.getVideoCaption(self.__youtubeObject.video_id, languageCode)
+            strFormatter = SRTFormatter()
+                        
+            with open(filePathSTR, 'w') as fileStr:
+                fileStr.writelines(strFormatter.format_transcript(caption))
+
+            return filePathSTR
         except Exception as e:
             logging.error(e)
             return ""
