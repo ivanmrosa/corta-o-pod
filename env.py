@@ -12,7 +12,8 @@ class Env:
             lines = f.read().split('\n')
             for line in lines:
                 keyValue = line.split("=")
-                self.__setattr__(keyValue[0], keyValue[1])
+                if len(keyValue) > 1:
+                    self.__setattr__(keyValue[0], keyValue[1])
 
     def getEnvValue(self, name: str) -> str:
         return self.__getattribute__(name)
