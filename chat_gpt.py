@@ -22,8 +22,17 @@ class ChatGpt:
                 "model": self.__chatGptModel,
                 "messages": chatMessages
             }
-        
-        response = self.__api.post('/chat/completions', request)["choices"][0]["message"]["content"] 
-        data =  json.loads(response)
+        try:
+            response = self.__api.post('/chat/completions', request)["choices"][0]["message"]["content"]
+        except Exception as e:
+            print(e)
+            response=""
+        print(response)
+        try:    
+            data =  json.loads(response)
+        except Exception as e:
+            print(e)
+            return []
+
         return data
         

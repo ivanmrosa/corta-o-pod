@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block actions %}
+  <a href="/">Go home</a>
+{% endblock %}
+
+{% block content %}
+   <h1>Add Video</h1>
+   <div>
+      <label>Inform the youtube video link</label>
+      <input type="text" id="youtubelink">
+      <button onclick="generateCuts()">Generate cuts</button>
+   </div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+    async function generateCuts() {
+       let link = document.getElementById("youtubelink").value;
+       bodyRequest = {"link": link};
+       const response = await fetch('/generate-cuts', {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+            },
+        body : JSON.stringify(bodyRequest)
+       });
+        response.json().then(function(metaData){
+            console.log(metaData)
+            if(metaData["link"] != "") {
+                console.log(metaData["link"])
+                window.location.href = `/video-detail?link=${metaData["link"]}`                
+            }else{
+                alert('Was not possible to process the video...')
+            }
+       })
+
+    }
+</script>   
+{% endblock %}
+

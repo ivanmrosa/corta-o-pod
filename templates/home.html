@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block actions %}
+  <a href="/add-video">Add new video</a>
+{% endblock %}
+
+{% block content %}
+  <ul>
+    {% for video in videos %}
+       <li> <a href="/video-detail?link={{video.link}}">{{video.title}} - {{video.link}}</a> </li>         
+    {% else %}
+       <li>No videos found</li>
+    {% endfor %}  
+  </ul>
+
+{% endblock %}

@@ -4,6 +4,36 @@ from chat_gpt import ChatGpt
 class CaptionFormatter:
     def __init__(self) -> None:
         self.__chatGpt = ChatGpt()
+    
+    def normalizeStrCaption(self, filePathToStr: str):
+        newLines = []
+        with open(filePathToStr, 'r') as f:
+            lines = f.readlines()
+            blockCount = 0
+            text = ""
+            linesAmount = len(lines)
+            for count, line in enumerate(lines):
+                blockCount += 1
+                if blockCount <= 2:
+                    newLines.append(line)
+                    continue
+                if line == '\n' or linesAmount == count + 1:
+                    newLines.append(text.strip())
+                    newLines.append('\n\n')
+                    text = ""
+                    blockCount = 0
+                    continue
+                
+                text += line.replace("\n", " ")                
+            
+        
+        with open(filePathToStr, 'w') as f2:            
+            f2.truncate()
+            f2.write(''.join(newLines))
+
+                
+
+
 
     def mapCaption(self, filePathToStr: str, maximumCharactersPerTextBlock: int) -> dict:
         '''
@@ -47,7 +77,7 @@ class CaptionFormatter:
         for strLineText in strTextLines:
             textLineComponents.append(strLineText)
 
-            if strLinePosition % 4 == 0:
+            if  strLinePosition % 4 == 0:
                 begin, end = textLineComponents[1].split("-->")
                 line = {"startTime": begin.strip(), "endTime": end.strip(),
                         "strLinePosition": strLinePosition - 1, "text": textLineComponents[2]}
@@ -69,39 +99,38 @@ class CaptionFormatter:
         return map
 
     def getCuts(self, filePathToStr: str) -> list[dict]:
+        self.normalizeStrCaption(filePathToStr=filePathToStr)
         mappedCaption = self.mapCaption(filePathToStr=filePathToStr,
                                         maximumCharactersPerTextBlock=10_000)
 
         textBlocks: list[list] = mappedCaption["textBlocks"]
         equivalence = mappedCaption["equivalence"]
-
+        print(equivalence)
         cuts = []
         caption = ""
+        
+        for block in textBlocks:
+            if len(block) == 0:
+                continue
 
-        for count, block in enumerate(textBlocks):
             globalInitialLine = block[0]
             caption = " ".join([equivalence[line]["text"] for line in block])
             untreatedCuts = self.__chatGpt.requireCuts(captionText=caption)
-
-            cuts.extend(
-                [
-                    {
-                        "startTime": equivalence[int(untreatedCut["start"]) + globalInitialLine]["startTime"],
-                        "endTime": equivalence[int(untreatedCut["end"]) + globalInitialLine]["endTime"],
-                        "title": untreatedCut["title"],
-                        "resume": untreatedCut["resume"],
-                        "quote": untreatedCut["quote"],
-                    } for untreatedCut in untreatedCuts
-                ]
-            )
-
-            if count == 1:
-                break
-
-            # todo
-            # get the cuts for this portion of text
-            # the chatgpt will return the initial and the final line,
-            # but it corresponds the lines of the small portion passed as a parameter.
-            # I must calculate the global line number based on the line number gave by chatgpt
-            # somar a linha que o chatgpt passou com a linha inicial -1?
+            try:
+                cuts.extend(
+                    [
+                        {                            
+                            "startTime": equivalence[int(untreatedCut["start"]) + globalInitialLine]["startTime"],
+                            "endTime": equivalence[int(untreatedCut["end"]) + globalInitialLine]["endTime"],
+                            "title": untreatedCut["title"],
+                            "resume": untreatedCut["resume"],
+                            "quote": untreatedCut["quote"],
+                            "selected": False
+                        } for untreatedCut in untreatedCuts
+                    ]
+                )
+            except Exception as e:
+                print(e)
+        for i in range(len(cuts)):
+            cuts[i]["id"] = i
         return cuts

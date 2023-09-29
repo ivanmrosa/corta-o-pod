@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    <title>{% block title %}{% endblock %} - Corta o Pod</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <nav>
+      <h1>Actions</h1>
+      <ul>
+        {% block actions %}{% endblock %}
+      </ul>
+    </nav>
+    <section class="content">
+        {% block content %}{% endblock %}
+    </section>    
+  </body>
+  {% block scripts %} {% endblock %}
+</html>
+
+

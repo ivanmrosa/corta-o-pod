@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block actions %}
+  <a href="/">Go Home</a>
+{% endblock %}
+
+{% block content %}
+  <h2>Cuts to select:</h2>
+  <ul>
+    {% for cut in cuts %}
+       <li> {{cut}} </li>         
+    {% else %}
+       <li> No cuts found </li>         
+    {% endfor %}  
+
+  </ul>
+
+{% endblock %}
