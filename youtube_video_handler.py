@@ -1,10 +1,11 @@
 import os
 from pytube import YouTube
-from moviepy.editor import VideoFileClip, AudioFileClip
+from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips
 import logging
 from env import Env
 from google_api import GoogleApi
 from youtube_transcript_api.formatters import SRTFormatter
+from moviepy.audio.fx import all as afx
 
 class YouTubeVideoHandler:
 
@@ -12,6 +13,7 @@ class YouTubeVideoHandler:
         self.__youtubeObject = YouTube(videoLink)
         self.__baseDirectory = baseDirectory
         self.__env = Env()
+        self.finalInsertionVideoPath = self.__env.getEnvValue('VIDEO_ENDING_INSERTION_PATH')
         self.__googleApi = GoogleApi()
     
     def getVideoTitle(self):
@@ -43,7 +45,7 @@ class YouTubeVideoHandler:
             filter(file_extension="mp4").\
             get_by_itag(fullHdTag).\
             download(filename=os.path.join(self.__baseDirectory,
-                     f'{self.__youtubeObject.title}.mp4'))
+                     f'{self.__youtubeObject.title}.mp4'), max_retries=3)
 
         videoClip : VideoFileClip = VideoFileClip(videoFileName)
         finalVideoClip : VideoFileClip  = None;     
@@ -107,6 +109,12 @@ class YouTubeVideoHandler:
         endInSecodns = (int(hours) * 3600) + (int(minutes) * 60) + float(seconds.replace(",", "."))
         videoClip: VideoFileClip = video.subclip(startInSeconds, endInSecodns)
         audioClip: AudioFileClip = audio.subclip(start, end)
-        videoClipWithAudio: VideoFileClip = videoClip.set_audio(audioClip)
-        videoClipWithAudio.write_videofile(os.path.join(os.path.dirname(videoClip.filename), fileName)) 
+        audioClip = audioClip.fx(afx.audio_fadeout, 3)
+        videoClipWithAudio: VideoFileClip = videoClip.set_audio(audioClip)  
+        if self.finalInsertionVideoPath:
+            finalInsertionVideo = VideoFileClip(self.finalInsertionVideoPath)
+            finalVideo = concatenate_videoclips([videoClipWithAudio, finalInsertionVideo])
+        else:
+            finalVideo = videoClipWithAudio
+        finalVideo.write_videofile(os.path.join(os.path.dirname(videoClip.filename), fileName)) 
         

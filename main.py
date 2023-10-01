@@ -1,6 +1,8 @@
 import os
 import json
+from datetime import datetime
 from pathlib import Path
+import shutil
 from flask import Flask, request, render_template, Response
 
 from youtube_video_handler import YouTubeVideoHandler
@@ -19,7 +21,8 @@ if __name__ == "__main__":
 
 @app.route('/')
 def home():
-    paths = sorted(Path(dir).iterdir(), key=os.path.getmtime)
+    #paths = sorted(Path(dir).iterdir(), key=os.path.getatime)    
+    paths = Path(dir).iterdir()
     videos = []
     
     for path in paths:
@@ -27,7 +30,12 @@ def home():
         print(meta)
         if len(meta.keys()) > 0:
             videos.append(meta)
-
+    print(videos)
+    videos = sorted(videos, 
+        key=lambda video: datetime.strptime(video["uploadDate"].split('.')[0], 
+                                            '%Y-%m-%d %H:%M:%S'), reverse=True)
+    
+    
     return render_template('home.html', videos=videos)
 
 
@@ -36,7 +44,7 @@ def videoDetail():
     link = request.args['link']
     handler = CutsHandler(dir, link)
     cuts = handler.retrievePreparedCuts()    
-    return render_template('video-detail.html', cuts=cuts)
+    return render_template('video-detail.html', cuts=cuts, link=link)
 
 @app.route('/add-video')
 def addVideo():
@@ -50,61 +58,32 @@ def generateCuts():
     alreadySavedMeta = CutsHandler.retriveMetadatas(handler.getVideoDirectory())
     if len(alreadySavedMeta.keys()) > 0:
         return alreadySavedMeta
-    
-    
+        
     handler.prepareCuts()    
     meta = CutsHandler.retriveMetadatas(handler.getVideoDirectory())
-    return Response(json.dumps
-    (meta), content_type="application/json")
+    return Response(json.dumps(meta), content_type="application/json")
 
+@app.route('/generate-video-cuts', methods=['POST'])
+def generateVideoCuts():
+    data = json.loads(request.data)
+    print(data)
+    selectedIds = [ int(id) for id in data["ids"]]
+    handler = CutsHandler(dir, data["videoLink"])
+    cuts = handler.retrievePreparedCuts()
+    for index in range(len(cuts)):
+        cuts[index]["selected"] = False
+        if cuts[index]["id"] in selectedIds:
+            cuts[index]["selected"] = True
+            cuts[index]["cutPath"] =  os.path.join(handler.getVideoDirectory(), f'{cuts[index]["title"]}.mp4' ) 
+    
+    handler.savePreparedCuts(cuts=cuts)
+    handler.generateCutsFromVideo()
+    return Response(json.dumps({"message": "Video clips generated successfully!"}), content_type="application/json")
 
-
-
-
-#/Users/ivanmuniz/Documents/dev/corta-o-pod/cortaopod/lib/python3.11/site-packages/pytube/cipher.py
-#chanched line 411 -> transform_plan_raw = js #find_object_from_startpoint(raw_code, match.span()[1] - 1)
-#unkown error happened and that change solved it
-
-#
-#link = "https://www.youtube.com/watch?v=-roK1JndcBY&t=24s"
-#handler = CutsHandler(dir)
-#handler.saveCuts(link)
-
-
-
-
-
-#youtubeHandler : YouTubeVideoHandler = YouTubeVideoHandler(link, dir)
-#videoFileClip = youtubeHandler.downloadVideo(False, False)
-#audioFileClip = youtubeHandler.downloadAudio()
-#youtubeHandler.cut("00:05:16,58", "00:06:17,00", video=videoFileClip, audio=audioFileClip, fileName='clip1.mp4')
-
-#pegar os cortes
-#captionFormatter = CaptionFormatter()
-#captionPath = youtubeHandler.downloadCaption()
-#cuts = captionFormatter.getCuts(captionPath)
-#for cut in cuts:
-#    youtubeHandler.cut(cut["startTime"], cut["endTime"], videoFileClip, audioFileClip, f'{cut["title"]}.mp4')
-
-
-
-#cortar os pedacos
-
-
-# captionFormatter = CaptionFormatter()
-# data = captionFormatter.mapCaption(os.path.join(dir, 'texto_teste.txt'), 10_000)
-
-#with open(os.path.join(dir, 'mapping.json'), 'w') as f:
-#    f.writelines(json.dumps(data))
-
-#with open(os.path.join(dir, 'TIAGO LEIFERT - Flow #268', 'TIAGO LEIFERT - Flow #268.str'), 'r') as f:
-#   text: str = f.read()
-
-#text = text[0: 10_0000]
-#chatGpt = ChatGpt()
-#cuts = chatGpt.requireCuts(text)
-#print(cuts)
-
-#captionFormatter = CaptionFormatter()
-#captionsPath = "/Users/ivanmuniz/Documents/dev/corta-o-pod/TIAGO LEIFERT - Flow #268.str"
-#print(captionFormatter.getCuts(captionsPath))
+@app.route('/delete-youtube-video', methods=['POST'])
+def deleteYoutubeVideo():
+    data = json.loads(request.data)    
+    handler = CutsHandler(dir, data["link"])
+    videoDir = handler.getVideoDirectory()
+    shutil.rmtree(videoDir)
+    return {"message": "Video deleted!"}

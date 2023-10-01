@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 from youtube_video_handler import YouTubeVideoHandler
 from caption_formatter import CaptionFormatter
 from moviepy.editor import VideoFileClip, AudioFileClip
@@ -37,17 +38,17 @@ class CutsHandler:
             print(e)
             return {}
 
-
+    
     def saveMetadatas(self):
         if not os.path.exists(self.__videoDir):
             os.mkdir(self.__videoDir)
         self.__savedataOnMetadata('link', self.__link)
         self.__savedataOnMetadata('title', self.__youtubeHandler.getVideoTitle())
         self.__savedataOnMetadata('id', self.__youtubeHandler.getVideoId())
+        self.__savedataOnMetadata('uploadDate', datetime.now())
 
     def prepareCuts(self):  
-        self.saveMetadatas()
-        self.__savedataOnMetadata('link', self.__link)
+        self.saveMetadatas()        
         self.__youtubeHandler.chanceBaseDir(self.__videoDir)
         self.__youtubeHandler.downloadVideo(False, False)
         self.__youtubeHandler.downloadAudio()
@@ -69,10 +70,10 @@ class CutsHandler:
             f.write(json.dumps(cuts))
 
     def retrieveAudioFromLocalStorage(self) -> AudioFileClip:
-        return AudioFileClip(os.path.join(self.__videoDir, self.__youtubeHandler.getVideoTitle(), '_audio.mp4'))
+        return AudioFileClip(os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}_audio.mp4'))
 
     def retrieveVideoFromLocalStorage(self) -> VideoFileClip:
-        return VideoFileClip(os.path.join(self.__videoDir, self.__youtubeHandler.getVideoTitle(), '.mp4'))
+        return VideoFileClip(os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}.mp4'))
 
     def generateCutsFromVideo(self):
         audioFileClip = self.retrieveAudioFromLocalStorage()

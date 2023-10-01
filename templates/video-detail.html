@@ -1,18 +1,125 @@
 {% extends 'base.html' %}
 
+
+{% block header %}
+<h1>Video detail</h1>
+{% endblock %}
+
 {% block actions %}
-  <a href="/">Go Home</a>
+  <a class="btn btn-primary" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-fill" viewBox="0 0 16 16">
+    <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>
+    <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Z"/>
+  </svg> Go Home</a>
+{% endblock %}
+
+{% block cardtitle %} 
+<div class="card-header">
+  Cuts to select
+</div>
 {% endblock %}
 
 {% block content %}
-  <h2>Cuts to select:</h2>
-  <ul>
-    {% for cut in cuts %}
-       <li> {{cut}} </li>         
+ 
+  <table class="table table-striped">
+    <thead>
+      <tr>
+         <th>Stat time</th>
+         <th>End time</th>
+         <th>Title</th>
+         <th>Resume</th>
+         <th>Quote</th>
+         <th>Path</th>
+         <th>Selected</th>         
+      </tr>
+    </thead>
+    {% for cut in cuts %}       
+       <tr> 
+        <td>{{cut.startTime}}</td>
+        <td>{{cut.endTime}}</td>
+        <td>{{cut.title}}</td>
+        <td>{{cut.resume}}</td>
+        <td>{{cut.quote}}</td>
+        <td>{{cut.cutPath}}</td>
+        {% if cut.selected == True %}
+            <td><input type="checkbox" value="{{cut.id}}" checked  class="selectedcut"></td>
+        {% else %}
+            <td><input type="checkbox" value="{{cut.id}}" class="selectedcut"></td>
+        {% endif %}
+      </tr>
     {% else %}
-       <li> No cuts found </li>         
+       <tr><td colspan="6">No cuts found</td> </tr>
     {% endfor %}  
+  </table>
+  <div class="card">
+    <button type="button" class="btn btn-primary" onclick="proccessVideos()">      
+      Generate video clips
+    </button>    
+  </div>  
+  
 
-  </ul>
 
+
+ <div class="modal" tabindex="-1" id="modalloading">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Processing....</h5>        
+      </div>
+      <div class="modal-body">
+        <div class="d-flex align-items-center">
+          <strong>Processing...</strong>
+          <div class="spinner-border ms-auto" role="status" aria-hidden="true"></div>
+        </div>
+      </div>      
+    </div>
+  </div>
+</div>
+
+<input type="hidden" value="{{link}}" id="videolink" />
+
+{% endblock %}
+
+
+
+{% block scripts %}
+  <script>
+      async function proccessVideos(){
+                        
+        const allSelectors = document.querySelectorAll('.selectedcut');
+        let selectedValues = [];
+        allSelectors.forEach(element => {
+           if(element.checked){
+             selectedValues.push(element.value);
+           }
+        });
+        const videolink = document.getElementById("videolink").value;
+        const requestData = {"videoLink": videolink, "ids": selectedValues};
+        
+        let loadingModal = new bootstrap.Modal(
+          document.getElementById('modalloading'),
+          {backdrop: 'static', keyboard: false}
+        );
+
+        loadingModal.toggle();
+        
+        let respose = await fetch('/generate-video-cuts', {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/javascript"
+          },
+          body: JSON.stringify(requestData)
+        })
+
+        respose.json().then(function(responseValue){
+          alert(responseValue["message"]);
+          loadingModal.toggle();
+          window.location.reload()
+        }).catch(function(error){
+          alert(error);
+          loadingModal.toggle();
+        });
+      }
+
+      
+  </script>
 {% endblock %}

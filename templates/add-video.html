@@ -1,22 +1,65 @@
 {% extends 'base.html' %}
 
+{% block header %}
+<h1>Add new video</h1>
+{% endblock %}
+
+
 {% block actions %}
-  <a href="/">Go home</a>
+  <a class="btn btn-primary" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-fill" viewBox="0 0 16 16">
+    <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>
+    <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Z"/>
+  </svg> Go home</a>
 {% endblock %}
 
 {% block content %}
    <h1>Add Video</h1>
-   <div>
+   <div class="container">
       <label>Inform the youtube video link</label>
-      <input type="text" id="youtubelink">
-      <button onclick="generateCuts()">Generate cuts</button>
+      <input class="form-control" type="text" id="youtubelink">
    </div>
+   <div class="container" style="margin-top: 15px;">
+       <div class="card">
+            <button type="button" class="btn btn-primary" onclick="generateCuts()">
+                Generate pre cuts</button>    
+       </div>
+  </div>     
+  
+  
+  <div class="modal" tabindex="-1" id="modalloading">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Processing....</h5>        
+        </div>
+        <div class="modal-body">
+          <div class="d-flex align-items-center">
+            <strong>Processing...</strong>
+            <div class="spinner-border ms-auto" role="status" aria-hidden="true"></div>
+          </div>
+        </div>      
+      </div>
+    </div>
+  </div>
+  
 {% endblock %}
 
 {% block scripts %}
 <script type="text/javascript">
     async function generateCuts() {
+        let loadingModal = new bootstrap.Modal(
+          document.getElementById('modalloading'),
+          {backdrop: 'static', keyboard: false}
+        );
+
+        loadingModal.toggle();
+
        let link = document.getElementById("youtubelink").value;
+       if(link == ""){
+        alert('Inform the link!');
+        loadingModal.toggle();
+        return;
+       }
        bodyRequest = {"link": link};
        const response = await fetch('/generate-cuts', {
         method: 'POST',
@@ -26,14 +69,17 @@
         body : JSON.stringify(bodyRequest)
        });
         response.json().then(function(metaData){
-            console.log(metaData)
+            loadingModal.toggle();
             if(metaData["link"] != "") {
                 console.log(metaData["link"])
                 window.location.href = `/video-detail?link=${metaData["link"]}`                
             }else{
                 alert('Was not possible to process the video...')
             }
-       })
+       }).catch(function(error){
+          alert(error);
+          loadingModal.toggle();
+       });
 
     }
 </script>   
