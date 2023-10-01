@@ -1,17 +1,13 @@
 import os
 import json
+import shutil
 from datetime import datetime
 from pathlib import Path
-import shutil
 from flask import Flask, request, render_template, Response
-
-from youtube_video_handler import YouTubeVideoHandler
 from env import Env
-from caption_formatter import CaptionFormatter
-from chat_gpt import ChatGpt
 from cuts_handler import CutsHandler
 
-dir = os.path.join(os.path.dirname(__file__), 'videos')
+dir = Env().getEnvValue('VIDEOS_DIRECTORY') #os.path.join(os.path.dirname(__file__), 'videos')
 app = Flask(__name__)
 
 
@@ -20,8 +16,7 @@ if __name__ == "__main__":
 
 
 @app.route('/')
-def home():
-    #paths = sorted(Path(dir).iterdir(), key=os.path.getatime)    
+def home():    
     paths = Path(dir).iterdir()
     videos = []
     
@@ -43,8 +38,10 @@ def home():
 def videoDetail():
     link = request.args['link']
     handler = CutsHandler(dir, link)
+    metaData = CutsHandler.retriveMetadatas(handler.getVideoDirectory())
+    print(metaData)
     cuts = handler.retrievePreparedCuts()    
-    return render_template('video-detail.html', cuts=cuts, link=link)
+    return render_template('video-detail.html', cuts=cuts, link=link, videoTitle=metaData["title"])
 
 @app.route('/add-video')
 def addVideo():
