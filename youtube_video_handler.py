@@ -116,5 +116,8 @@ class YouTubeVideoHandler:
             finalVideo = concatenate_videoclips([videoClipWithAudio, finalInsertionVideo])
         else:
             finalVideo = videoClipWithAudio
-        finalVideo.write_videofile(os.path.join(os.path.dirname(videoClip.filename), fileName)) 
+        videoClipDir = os.path.join(os.path.dirname(videoClip.filename), fileName.split('.')[0])
+        if not os.path.exists(videoClipDir):
+            os.makedirs(videoClipDir)
+        finalVideo.write_videofile(os.path.join(videoClipDir, fileName))        
         

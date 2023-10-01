@@ -65,19 +65,10 @@ def generateCuts():
 
 @app.route('/generate-video-cuts', methods=['POST'])
 def generateVideoCuts():
-    data = json.loads(request.data)
-    print(data)
+    data = json.loads(request.data)    
     selectedIds = [ int(id) for id in data["ids"]]
-    handler = CutsHandler(dir, data["videoLink"])
-    cuts = handler.retrievePreparedCuts()
-    for index in range(len(cuts)):
-        cuts[index]["selected"] = False
-        if cuts[index]["id"] in selectedIds:
-            cuts[index]["selected"] = True
-            cuts[index]["cutPath"] =  os.path.join(handler.getVideoDirectory(), f'{cuts[index]["title"]}.mp4' ) 
-    
-    handler.savePreparedCuts(cuts=cuts)
-    handler.generateCutsFromVideo()
+    handler = CutsHandler(dir, data["videoLink"])    
+    handler.generateCutsFromVideo(selectedIds=selectedIds)
     return Response(json.dumps({"message": "Video clips generated successfully!"}), content_type="application/json")
 
 @app.route('/delete-youtube-video', methods=['POST'])

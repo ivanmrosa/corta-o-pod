@@ -74,8 +74,20 @@ class CutsHandler:
 
     def retrieveVideoFromLocalStorage(self) -> VideoFileClip:
         return VideoFileClip(os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}.mp4'))
+    
+    def selectVideos(self, selectedIds : dict):
+        cuts = self.retrievePreparedCuts()
+        for index in range(len(cuts)):
+            cuts[index]["selected"] = False
+            if cuts[index]["id"] in selectedIds:
+                cuts[index]["selected"] = True
+                cuts[index]["cutPath"] =  os.path.join(self.getVideoDirectory(), cuts[index]["title"], f'{cuts[index]["title"]}.mp4' ) 
+        
+        self.savePreparedCuts(cuts=cuts)
+        
 
-    def generateCutsFromVideo(self):
+    def generateCutsFromVideo(self, selectedIds : dict):
+        self.selectVideos(selectedIds=selectedIds)
         audioFileClip = self.retrieveAudioFromLocalStorage()
         videoFileClip = self.retrieveVideoFromLocalStorage()
         preparedCutsJson: list[dict] = self.retrievePreparedCuts()
