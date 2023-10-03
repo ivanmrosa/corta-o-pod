@@ -22,10 +22,8 @@ def home():
     
     for path in paths:
         meta = CutsHandler.retriveMetadatas(path)
-        print(meta)
         if len(meta.keys()) > 0:
-            videos.append(meta)
-    print(videos)
+            videos.append(meta)    
     videos = sorted(videos, 
         key=lambda video: datetime.strptime(video["uploadDate"].split('.')[0], 
                                             '%Y-%m-%d %H:%M:%S'), reverse=True)
@@ -39,7 +37,6 @@ def videoDetail():
     link = request.args['link']
     handler = CutsHandler(dir, link)
     metaData = CutsHandler.retriveMetadatas(handler.getVideoDirectory())
-    print(metaData)
     cuts = handler.retrievePreparedCuts()    
     return render_template('video-detail.html', cuts=cuts, link=link, videoTitle=metaData["title"])
 
@@ -75,3 +72,27 @@ def deleteYoutubeVideo():
     videoDir = handler.getVideoDirectory()
     shutil.rmtree(videoDir)
     return {"message": "Video deleted!"}
+
+@app.route('/edit-cut', methods=['POST'])
+def editCut():
+    data = json.loads(request.data)    
+    handler = CutsHandler(dir, data["link"])
+    id = int(data["cut"]["id"])    
+    cuts = handler.retrievePreparedCuts()    
+    saved = False
+    for index, c in enumerate(cuts):
+        if c["id"] == id:
+            cuts[index] = data["cut"]
+            cuts[index]["id"] = id
+            saved = True
+            break
+    handler.savePreparedCuts(cuts=cuts)
+    return {"message": "Cut saved!" if saved else "Cut was not found."}
+
+@app.route('/preview-cut', methods=['POST'])
+def preview():
+    data = json.loads(request.data)    
+    handler = CutsHandler(dir, data["link"])
+    handler.runPreview(data["cut"])
+    return {"message": "Preview executed."}
+    

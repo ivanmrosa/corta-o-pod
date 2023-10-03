@@ -30,21 +30,25 @@
          <th>Quote</th>
          <th>Path</th>
          <th>Selected</th>         
+         <th>*</th>
+         <th>*</th>
       </tr>
     </thead>
     {% for cut in cuts %}       
        <tr> 
-        <td>{{cut.startTime}}</td>
-        <td>{{cut.endTime}}</td>
-        <td>{{cut.title}}</td>
-        <td>{{cut.resume}}</td>
-        <td>{{cut.quote}}</td>
-        <td>{{cut.cutPath}}</td>
-        {% if cut.selected == True %}
-            <td><input type="checkbox" value="{{cut.id}}" checked  class="selectedcut"></td>
-        {% else %}
-            <td><input type="checkbox" value="{{cut.id}}" class="selectedcut"></td>
-        {% endif %}
+        <td data-name="startTime">{{cut.startTime}}</td>
+        <td data-name="endTime">{{cut.endTime}}</td>
+        <td data-name="title">{{cut.title}}</td>
+        <td data-name="resume">{{cut.resume}}</td>
+        <td data-name="quote">{{cut.quote}}</td>
+        <td data-name="cutPath">{{cut.cutPath}}</td>
+        <td><input type="checkbox" value="{{cut.id}}" class="selectedcut"></td>
+        <td><span style="cursor: pointer;"  onclick="editRow(this, '{{cut.id}}')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
+          <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001z"/>
+        </svg></span></td>
+        <td><span onclick="preview(this, '{{cut.id}}')" style="cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tv-fill" viewBox="0 0 16 16">
+          <path d="M2.5 13.5A.5.5 0 0 1 3 13h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zM2 2h12s2 0 2 2v6s0 2-2 2H2s-2 0-2-2V4s0-2 2-2z"/>
+        </svg></span></td>
       </tr>
     {% else %}
        <tr><td colspan="6">No cuts found</td> </tr>
@@ -71,6 +75,50 @@
           <div class="spinner-border ms-auto" role="status" aria-hidden="true"></div>
         </div>
       </div>      
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" tabindex="-1" id="modalediting">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Editing</h5>        
+      </div>
+      <div class="modal-body">
+        <div id="updateform">        
+          <div class="mb-3">
+            <label for="startTime" class="form-label">Start time</label>
+            <input type="text" class="form-control" id="startTime" placeholder="Start time">
+          </div>
+          <div class="mb-3">
+            <label for="endTime" class="form-label">End time</label>
+            <input type="text" class="form-control" id="endTime" placeholder="End time">
+          </div>
+          <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="title" placeholder="Title">
+          </div>        
+          <div class="mb-3">
+            <label for="resume" class="form-label">Resume</label>
+            <textarea  class="form-control" id="resume" placeholder="Resume" rows="3"></textarea>
+          </div>            
+          <div class="mb-3">
+            <label for="quote" class="form-label">Quote</label>
+            <textarea class="form-control" id="quote" placeholder="Quote" rows="3"></textarea>
+          </div>             
+          <div class="mb-3">
+            <label for="cutPath" class="form-label">Path</label>
+            <textarea class="form-control" id="cutPath" placeholder="Path" rows="3"></textarea>
+          </div>   
+          <input id="id" type="hidden" class="form-control">
+        </div>      
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveChanges()">Save changes</button>
+      </div>
     </div>
   </div>
 </div>
@@ -120,6 +168,81 @@
         });
       }
 
+      function editRow(element, id){        
+        const rowElements = element.parentElement.parentElement.querySelectorAll('td');
+        
+        rowElements.forEach(function(column){
+          let dataSet = column.dataset;          
+          let value = column.innerHTML;
+          if(dataSet.hasOwnProperty('name')){            
+            document.getElementById(column.dataset["name"]).value = value;            
+          }
+        });
+
+        document.getElementById("id").value = id;
+        let editingModel = new bootstrap.Modal(
+          document.getElementById('modalediting'),          
+        );
+        editingModel.toggle();
+        
+      } 
       
+      async function saveChanges(){
+        let elements = document.querySelector('#updateform').querySelectorAll('.form-control');
+        let cut = {};
+        elements.forEach(function(item){
+          cut[item.id] = item.value;
+        })
+         
+        let requestData = {"cut": cut, "link": document.getElementById("videolink").value};
+    
+        let respose = await fetch('/edit-cut', {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/javascript"
+          },
+          body: JSON.stringify(requestData)
+        })
+
+        respose.json().then(function(responseValue){
+          alert(responseValue["message"]);          
+          window.location.reload()
+        }).catch(function(error){
+          alert(error);          
+        });       
+
+      }
+
+      async function preview(element, id){
+        const rowElements = element.parentElement.parentElement.querySelectorAll('td');
+        let cut = {};
+        rowElements.forEach(function(column){
+          let dataSet = column.dataset;          
+          let value = column.innerHTML;
+          if(dataSet.hasOwnProperty('name')){            
+            cut[column.dataset["name"]] = value;            
+          }
+        });
+
+        cut["id"] = id;         
+        let requestData = {"cut": cut, "link": document.getElementById("videolink").value};
+    
+        let respose = await fetch('/preview-cut', {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/javascript"
+          },
+          body: JSON.stringify(requestData)
+        })
+
+        respose.json().then(function(responseValue){
+          alert(responseValue["message"]);          
+          window.location.reload()
+        }).catch(function(error){
+          alert(error);          
+        });       
+
+      }
+
   </script>
 {% endblock %}

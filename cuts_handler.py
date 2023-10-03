@@ -84,8 +84,13 @@ class CutsHandler:
                 cuts[index]["cutPath"] =  os.path.join(self.getVideoDirectory(), cuts[index]["title"], f'{cuts[index]["title"]}.mp4' ) 
         
         self.savePreparedCuts(cuts=cuts)
-        
 
+    def runPreview(self, cut: dict):
+        audio = self.retrieveAudioFromLocalStorage()
+        video = self.retrieveVideoFromLocalStorage()
+        self.__youtubeHandler.preview(cut["startTime"], cut["endTime"], video, audio)
+        
+   
     def generateCutsFromVideo(self, selectedIds : dict):
         self.selectVideos(selectedIds=selectedIds)
         audioFileClip = self.retrieveAudioFromLocalStorage()

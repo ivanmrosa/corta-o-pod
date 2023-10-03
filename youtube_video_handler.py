@@ -100,6 +100,12 @@ class YouTubeVideoHandler:
         except Exception as e:
             logging.error(e)
             return ""
+    
+    def preview(self, start: str, end: str, video: VideoFileClip, audio: AudioFileClip):
+        subVideo = video.subclip(start, end)
+        subAudio = audio.subclip(start, end)
+        subVideo: VideoFileClip = subVideo.set_audio(subAudio)
+        subVideo.preview()
 
     def cut(self, start: str, end: str, video: VideoFileClip, audio: AudioFileClip, fileName: str) -> None:
         #00:00:09,640
