@@ -14,12 +14,19 @@
 
 {% block cardtitle %} 
 <div class="card-header">
-  {{videoTitle}}
+  {{videoTitle}} - <a href="{{link}}" target="_blank">{{link}}</a>
 </div>
 {% endblock %}
 
 {% block content %}
- 
+  <div class="d-flex gap-2 mb-3">
+    <button class="btn btn-primary" 
+           type="button"
+           onclick="insertRow(this)"
+           ><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+      <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
+    </svg></button>    
+  </div>
   <table class="table table-striped">
     <thead>
       <tr>
@@ -60,8 +67,6 @@
     </button>    
   </div>  
   
-
-
 
  <div class="modal" tabindex="-1" id="modalloading">
   <div class="modal-dialog">
@@ -119,6 +124,29 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" onclick="saveChanges()">Save changes</button>
       </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="modal" tabindex="-1" id="modalpreview">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Preview....</h5>        
+      </div>
+      <div class="modal-body">
+        <div class="embed-responsive">
+          <video controls width="450" id="preview-video" class="embed-responsive-item">
+            <source id="preview-source" src="" type="video/mp4" />
+          </video>            
+        </div>
+      </div>      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>        
+      </div>
+    </div>
     </div>
   </div>
 </div>
@@ -186,7 +214,27 @@
         editingModel.toggle();
         
       } 
-      
+            
+      function insertRow(element){        
+        const rowElements = element.parentElement.parentElement.querySelectorAll('td');
+        
+        rowElements.forEach(function(column){
+          let dataSet = column.dataset;          
+          let value = column.innerHTML;
+          if(dataSet.hasOwnProperty('name')){            
+            document.getElementById(column.dataset["name"]).value = "";   
+          }
+        });
+
+        document.getElementById("id").value = "";
+        let editingModel = new bootstrap.Modal(
+          document.getElementById('modalediting'),          
+        );
+        editingModel.toggle();
+        
+      } 
+
+
       async function saveChanges(){
         let elements = document.querySelector('#updateform').querySelectorAll('.form-control');
         let cut = {};
@@ -213,7 +261,7 @@
 
       }
 
-      async function preview(element, id){
+      async function preview(element, id){        
         const rowElements = element.parentElement.parentElement.querySelectorAll('td');
         let cut = {};
         rowElements.forEach(function(column){
@@ -223,25 +271,23 @@
             cut[column.dataset["name"]] = value;            
           }
         });
+        
+        let path = cut["cutPath"];
+        const videolink = document.getElementById("videolink").value;
+        if(path){
+          let editingModel = new bootstrap.Modal(
+              document.getElementById('modalpreview'), 
+              {backdrop: 'static', keyboard: false}         
+            );
+          editingModel.toggle();
+          document.getElementById("preview-source").setAttribute("src", `/stream-video?link=${videolink}&id=${id}`);
+          document.getElementById("preview-video").load();
+                    
+        }else{
+          alert('Video clip not generated.')
+        }
 
-        cut["id"] = id;         
-        let requestData = {"cut": cut, "link": document.getElementById("videolink").value};
-    
-        let respose = await fetch('/preview-cut', {
-          method: 'POST',
-          headers: {
-            "Content-Type": "application/javascript"
-          },
-          body: JSON.stringify(requestData)
-        })
-
-        respose.json().then(function(responseValue){
-          alert(responseValue["message"]);          
-          window.location.reload()
-        }).catch(function(error){
-          alert(error);          
-        });       
-
+        
       }
 
   </script>

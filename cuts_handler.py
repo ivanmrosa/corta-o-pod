@@ -85,10 +85,11 @@ class CutsHandler:
         
         self.savePreparedCuts(cuts=cuts)
 
-    def runPreview(self, cut: dict):
+    def getPreview(self, start, end) -> VideoFileClip:
         audio = self.retrieveAudioFromLocalStorage()
         video = self.retrieveVideoFromLocalStorage()
-        self.__youtubeHandler.preview(cut["startTime"], cut["endTime"], video, audio)
+        return self.__youtubeHandler.preview(start, end, video, audio)
+        
         
    
     def generateCutsFromVideo(self, selectedIds : dict):

@@ -101,11 +101,11 @@ class YouTubeVideoHandler:
             logging.error(e)
             return ""
     
-    def preview(self, start: str, end: str, video: VideoFileClip, audio: AudioFileClip):
+    def preview(self, start: int, end: int, video: VideoFileClip, audio: AudioFileClip) -> VideoFileClip:
         subVideo = video.subclip(start, end)
         subAudio = audio.subclip(start, end)
         subVideo: VideoFileClip = subVideo.set_audio(subAudio)
-        subVideo.preview()
+        return subVideo
 
     def cut(self, start: str, end: str, video: VideoFileClip, audio: AudioFileClip, fileName: str) -> None:
         #00:00:09,640
