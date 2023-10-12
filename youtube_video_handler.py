@@ -105,6 +105,7 @@ class YouTubeVideoHandler:
         subVideo = video.subclip(start, end)
         subAudio = audio.subclip(start, end)
         subVideo: VideoFileClip = subVideo.set_audio(subAudio)
+        subVideo.preview()
         return subVideo
 
     def cut(self, start: str, end: str, video: VideoFileClip, audio: AudioFileClip, fileName: str) -> None:

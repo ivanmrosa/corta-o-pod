@@ -102,11 +102,12 @@ def editCut():
     handler.savePreparedCuts(cuts=cuts)
     return {"message": "Cut saved!" if saved else "Cut was not found."}
 
-@app.route('/preview-cut', methods=['POST'])
+@app.route('/preview-cut', methods=['GET'])
 def preview():
-    data = json.loads(request.data)    
-    handler = CutsHandler(dir, data["link"])
-    handler.runPreview(data["cut"])
+    link = request.args['link']        
+    #data = json.loads(request.data)    
+    handler = CutsHandler(dir, link)
+    handler.getPreview(10, 30)
     return {"message": "Preview executed."}
 
 @app.route("/preview-video", methods=["GET"])
