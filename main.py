@@ -2,21 +2,20 @@ import os
 import json
 import shutil
 import re
+import sys
 import functools
 from datetime import datetime
 from pathlib import Path
+from threading import Thread
+import threading
 from flask import Flask, request, render_template, Response
 from env import Env
 from cuts_handler import CutsHandler
-from flask import render_template, request, Blueprint, current_app, send_file
-from moviepy.editor import VideoFileClip
+from flask import render_template, request
+import webview
 
 dir = Env().getEnvValue('VIDEOS_DIRECTORY')
 app = Flask( __name__)
-
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True, port=8080)
 
 
 @app.route('/')
@@ -92,8 +91,13 @@ def editCut():
                 saved = True
                 break
     else:
-        row = functools.reduce(lambda a, b: a if a["id"] > b["id"] else b, cuts)
-        id  = row["id"] + 1 if row else 0
+        if not cuts:
+            cuts = []
+            id = 0
+        else:
+            row = functools.reduce(lambda a, b: a if a["id"] > b["id"] else b, cuts)
+            id  = row["id"] + 1 if row else 0
+
         cut = data["cut"]
         cut["id"] = id
         cuts.append(cut)
@@ -168,3 +172,21 @@ def get_file():
                       content_type='video/mp4', direct_passthrough=True)
     resp.headers.add('Content-Range', 'bytes {0}-{1}/{2}'.format(start, start + length - 1, file_size))
     return resp
+
+def start_server():
+    app.run(host='0.0.0.0', debug=False, port=8080)
+    #app.run()
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', debug=True, port=8080)        
+    
+    # t = threading.Thread(target=start_server)
+    # t.daemon = True
+    # t.start()
+  
+    # webview.create_window("Corta o Pod", "http://127.0.0.1:8080", width=1080, height=1024)
+    # webview.start(gui='qt')
+    # sys.exit()    
+    
+    
+    

@@ -58,7 +58,7 @@ class YouTubeVideoHandler:
             finalVideoClip = videoClip
 
         if saveFile:
-            finalVideoClip.write_videofile(finalVideoFileName)
+            finalVideoClip.write_videofile(finalVideoFileName, audio_codec='libvorbis')
 
         if audioClip:
             self.removeAudioFile(audioClip)
@@ -126,5 +126,5 @@ class YouTubeVideoHandler:
         videoClipDir = os.path.join(os.path.dirname(videoClip.filename), fileName.split('.')[0])
         if not os.path.exists(videoClipDir):
             os.makedirs(videoClipDir)
-        finalVideo.write_videofile(os.path.join(videoClipDir, fileName))        
+        finalVideo.write_videofile(os.path.join(videoClipDir, fileName), audio_codec='libvorbis')        
         
