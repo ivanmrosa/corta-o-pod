@@ -151,6 +151,28 @@
   </div>
 </div>
 
+<div class="modal" tabindex="-1" id="modalpreviewfromyoutube">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Preview....</h5>        
+      </div>
+      <div class="modal-body">
+        <div class="embed-responsive">
+            <iframe id="ytplayer" type="text/html" width="750" height="360"
+            src="http://www.youtube.com/embed/M7lc1UVf-VE?autoplay=1&origin=http://example.com"
+            frameborder="0"></iframe>          
+        </div>
+      </div>      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>        
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+
+
 <input type="hidden" value="{{link}}" id="videolink" />
 
 {% endblock %}
@@ -284,10 +306,44 @@
           document.getElementById("preview-video").load();
                     
         }else{
-          alert('Video clip not generated.')
+          //alert('Video clip not generated.')
+          previewYoutube(element, id);
         }
 
         
+      }
+
+      async function previewYoutube(element, id){        
+        const rowElements = element.parentElement.parentElement.querySelectorAll('td');
+        let cut = {};
+        rowElements.forEach(function(column){
+          let dataSet = column.dataset;          
+          let value = column.innerHTML;
+          if(dataSet.hasOwnProperty('name')){            
+            cut[column.dataset["name"]] = value;            
+          }
+        });
+
+        let calculateSeconds = function(time){
+          let startSplited = time.split(":");
+          return (parseInt(startSplited[0]) * 60 * 60) + (parseInt(startSplited[1]) * 60) + (parseFloat(startSplited[2].split(',')[0])); 
+        }
+                
+        const videolink = document.getElementById("videolink").value;
+
+        let startTime = calculateSeconds(cut["startTime"]);
+        let endTime = calculateSeconds(cut["endTime"]);
+
+        
+        //http://www.youtube.com/embed/M7lc1UVf-VE?autoplay=1&origin=http://example.com
+        let videoId = videolink.split('?')[1].split('=')[1]
+        document.getElementById("ytplayer").setAttribute("src", `http://www.youtube.com/embed/${videoId}?autoplay=0&origin=http://127.0.0.1&start=${startTime}&end=${endTime}`);        
+        let editingModel = new bootstrap.Modal(
+            document.getElementById('modalpreviewfromyoutube'), 
+            {backdrop: 'static', keyboard: false}         
+          );
+        editingModel.toggle();                    
+                
       }
 
   </script>

@@ -125,7 +125,7 @@ class CaptionFormatter:
                             "title": untreatedCut["title"],
                             "resume": untreatedCut["resume"],
                             "quote": untreatedCut["quote"],
-                            "selected": False
+                            "selected": False                            
                         } for untreatedCut in untreatedCuts
                     ]
                 )
