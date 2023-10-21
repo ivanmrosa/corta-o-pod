@@ -1,6 +1,6 @@
 import os
 from pytube import YouTube
-from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips
+from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips, CompositeVideoClip, vfx
 import logging
 from env import Env
 from google_api import GoogleApi
@@ -14,6 +14,7 @@ class YouTubeVideoHandler:
         self.__baseDirectory = baseDirectory
         self.__env = Env()
         self.finalInsertionVideoPath = self.__env.getEnvValue('VIDEO_ENDING_INSERTION_PATH')
+        self.thumbsUpInsertionVideoPath = self.__env.getEnvValue('VIDEO_THUMBS_UP_INSERTION_PATH')
         self.__googleApi = GoogleApi()
     
     def getVideoTitle(self):
@@ -108,7 +109,7 @@ class YouTubeVideoHandler:
         subVideo.preview()
         return subVideo
 
-    def cut(self, start: str, end: str, video: VideoFileClip, audio: AudioFileClip, fileName: str) -> None:
+    def cut(self, start: str, end: str, video: VideoFileClip, audio: AudioFileClip, fileName: str, isShort: bool = False) -> None:
         #00:00:09,640
         hours, minutes, seconds = start.split(":")
         startInSeconds = (int(hours) * 3600) + (int(minutes) * 60) + float(seconds.replace(",", "."))
@@ -118,11 +119,20 @@ class YouTubeVideoHandler:
         audioClip: AudioFileClip = audio.subclip(start, end)
         audioClip = audioClip.fx(afx.audio_fadeout, 3)
         videoClipWithAudio: VideoFileClip = videoClip.set_audio(audioClip)  
-        if self.finalInsertionVideoPath:
+        if self.finalInsertionVideoPath and not isShort:
             finalInsertionVideo = VideoFileClip(self.finalInsertionVideoPath)
             finalVideo = concatenate_videoclips([videoClipWithAudio, finalInsertionVideo])
         else:
             finalVideo = videoClipWithAudio
+
+        if self.thumbsUpInsertionVideoPath and not isShort:
+            thumbsUpInsertionVideo = VideoFileClip(self.thumbsUpInsertionVideoPath, has_mask=True, target_resolution=(360, 640))
+            thumbsUpInsertionVideo = thumbsUpInsertionVideo.set_position(("center", "bottom"))
+            #(50, 720)
+            thumbsUpInsertionVideo = thumbsUpInsertionVideo.set_start(10)
+            thumbsUpInsertionVideo = thumbsUpInsertionVideo.fx(vfx.mask_color, color=[0,188,0], thr=100, s=5)    
+            finalVideo = CompositeVideoClip([finalVideo, thumbsUpInsertionVideo])
+
         videoClipDir = os.path.join(os.path.dirname(videoClip.filename), fileName.split('.')[0])
         if not os.path.exists(videoClipDir):
             os.makedirs(videoClipDir)

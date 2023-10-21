@@ -151,10 +151,10 @@ def get_chunk(byte1=None, byte2=None, path=""):
 def get_file():
     link = request.args.get('link') 
     cutId = request.args.get('id') 
-    handler = CutsHandler(dir, link)
+    handler = CutsHandler(dir, link)    
     cuts = handler.retrievePreparedCuts()
     cut = list(filter(lambda cut: cut["id"] == int(cutId), cuts))[0]
-    path = cut["cutPath"]
+    path = os.path.join(handler.getVideoDirectory(), cut["cutPath"].split('/')[-2], os.path.basename(cut["cutPath"]))     
 
     range_header = request.headers.get('Range', None)
     byte1, byte2 = 0, None
