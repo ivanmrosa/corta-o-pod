@@ -36,7 +36,8 @@
          <th>Resume</th>
          <th>Quote</th>
          <th>Path</th>
-         <th>Selected</th>         
+         <th>Short</th>         
+         <th>Selected</th>                  
          <th>*</th>
          <th>*</th>
       </tr>
@@ -49,6 +50,7 @@
         <td data-name="resume">{{cut.resume}}</td>
         <td data-name="quote">{{cut.quote}}</td>
         <td data-name="cutPath">{{cut.cutPath}}</td>
+        <td data-name="short">{{cut.short}}</td>
         <td><input type="checkbox" value="{{cut.id}}" class="selectedcut"></td>
         <td><span style="cursor: pointer;"  onclick="editRow(this, '{{cut.id}}')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
           <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001z"/>
@@ -95,29 +97,33 @@
         <div id="updateform">        
           <div class="mb-3">
             <label for="startTime" class="form-label">Start time</label>
-            <input type="text" class="form-control" id="startTime" placeholder="Start time">
+            <input type="text" class="form-control field" id="startTime" placeholder="Start time">
           </div>
           <div class="mb-3">
             <label for="endTime" class="form-label">End time</label>
-            <input type="text" class="form-control" id="endTime" placeholder="End time">
+            <input type="text" class="form-control field" id="endTime" placeholder="End time">
           </div>
           <div class="mb-3">
             <label for="title" class="form-label">Title</label>
-            <input type="text" class="form-control" id="title" placeholder="Title">
+            <input type="text" class="form-control field" id="title" placeholder="Title">
           </div>        
           <div class="mb-3">
             <label for="resume" class="form-label">Resume</label>
-            <textarea  class="form-control" id="resume" placeholder="Resume" rows="3"></textarea>
+            <textarea  class="form-control field" id="resume" placeholder="Resume" rows="3"></textarea>
           </div>            
           <div class="mb-3">
             <label for="quote" class="form-label">Quote</label>
-            <textarea class="form-control" id="quote" placeholder="Quote" rows="3"></textarea>
+            <textarea class="form-control field" id="quote" placeholder="Quote" rows="3"></textarea>
           </div>             
           <div class="mb-3">
             <label for="cutPath" class="form-label">Path</label>
-            <textarea class="form-control" id="cutPath" placeholder="Path" rows="3"></textarea>
+            <textarea class="form-control field" id="cutPath" placeholder="Path" rows="3"></textarea>
           </div>   
-          <input id="id" type="hidden" class="form-control">
+          <div class="mb-3">
+            <label for="short" class="form-label">Short</label>
+            <input type="checkbox" id="short" class="field"> 
+          </div>   
+          <input id="id" type="hidden" class="form-control field">
         </div>      
       </div>
       <div class="modal-footer">
@@ -138,7 +144,7 @@
       </div>
       <div class="modal-body">
         <div class="embed-responsive">
-          <video controls width="450" id="preview-video" class="embed-responsive-item" preload=auto>
+          <video controls width="450" id="preview-video" class="embed-responsive-item" playsinline preload=auto>
             <source id="preview-source" src="" type="video/mp4" />
           </video>            
         </div>
@@ -160,7 +166,7 @@
       <div class="modal-body">
         <div class="embed-responsive">
             <iframe id="ytplayer" type="text/html" width="750" height="360"
-            src="http://www.youtube.com/embed/M7lc1UVf-VE?autoplay=1&origin=http://example.com"
+            src=""
             frameborder="0"></iframe>          
         </div>
       </div>      
@@ -258,10 +264,14 @@
 
 
       async function saveChanges(){
-        let elements = document.querySelector('#updateform').querySelectorAll('.form-control');
+        let elements = document.querySelector('#updateform').querySelectorAll('.field');
         let cut = {};
         elements.forEach(function(item){
-          cut[item.id] = item.value;
+          if (item.id == 'short'){
+            cut[item.id] = item.checked;
+          }else{
+            cut[item.id] = item.value;
+          }          
         })
          
         let requestData = {"cut": cut, "link": document.getElementById("videolink").value};
@@ -296,7 +306,7 @@
         
         let path = cut["cutPath"];
         const videolink = document.getElementById("videolink").value;
-        if(path){
+        if(path != undefined && path != null && path.trim() != '' ){
           let editingModel = new bootstrap.Modal(
               document.getElementById('modalpreview'), 
               {backdrop: 'static', keyboard: false}         

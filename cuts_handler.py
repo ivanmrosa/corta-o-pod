@@ -5,6 +5,7 @@ from youtube_video_handler import YouTubeVideoHandler
 from caption_formatter import CaptionFormatter
 from moviepy.editor import VideoFileClip, AudioFileClip
 
+
 class CutsHandler:
 
     def __init__(self, baseDir: str, youtubeVideoLink: str) -> None:
@@ -70,7 +71,13 @@ class CutsHandler:
             f.write(json.dumps(cuts))
 
     def retrieveAudioFromLocalStorage(self) -> AudioFileClip:
-        return AudioFileClip(os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}_audio.mp4'))
+        path = os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}_audio.mp3')
+        if not os.path.exists(path=path):
+            path = os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}_audio.mp4')
+            if not os.path.exists(path=path):           
+                path = os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}_audio.webm')
+                            
+        return AudioFileClip(path)
 
     def retrieveVideoFromLocalStorage(self) -> VideoFileClip:
         return VideoFileClip(os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}.mp4'))
@@ -90,8 +97,7 @@ class CutsHandler:
         video = self.retrieveVideoFromLocalStorage()
         return self.__youtubeHandler.preview(start, end, video, audio)
         
-        
-   
+           
     def generateCutsFromVideo(self, selectedIds : dict):
         self.selectVideos(selectedIds=selectedIds)
         audioFileClip = self.retrieveAudioFromLocalStorage()
@@ -100,5 +106,12 @@ class CutsHandler:
         #pegar os cortes
         filteredList = list(filter(lambda item: item["selected"], preparedCutsJson))
         for cut in filteredList:
-            self.__youtubeHandler.cut(cut["startTime"], cut["endTime"], videoFileClip, audioFileClip, f'{cut["title"]}.mp4')
-        
+            isShort = "short" in cut and cut["short"]
+            self.__youtubeHandler.cut(
+                cut["startTime"], 
+                cut["endTime"], 
+                videoFileClip, 
+                audioFileClip, 
+                f'{cut["title"]}.mp4',
+                isShort=isShort
+                )

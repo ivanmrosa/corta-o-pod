@@ -17,14 +17,14 @@ fileName = os.path.join(dir, f'{youTubeVideoHandler.getVideoTitle()}.str')
 destFileName = os.path.join(dir, f'new_{youTubeVideoHandler.getVideoTitle()}.str')
 mappedFile = os.path.join(dir, f'mapped_{youTubeVideoHandler.getVideoTitle()}.json')
 cutsFile = os.path.join(dir, f'cuts_{youTubeVideoHandler.getVideoTitle()}.json')
-shutil.copy(fileName,  destFileName)
+shutil.copy(fileName, destFileName)
 
 captionFormatter.normalizeStrCaption(filePathToStr=fileName)
-mapped = captionFormatter.mapCaption(filePathToStr=fileName, maximumCharactersPerTextBlock=10_000)
-with open(mappedFile, 'w') as f:
-    f.writelines(json.dumps(mapped, indent=4))
+#mapped = captionFormatter.mapCaption(filePathToStr=fileName, maximumCharactersPerTextBlock=10_000)
+#with open(mappedFile, 'w') as f:
+#    f.writelines(json.dumps(mapped, indent=4))
 
-cuts = captionFormatter.getCuts(filePathToStr=fileName)
+#cuts = captionFormatter.getCuts(filePathToStr=fileName)
 
-with open(cutsFile, 'w') as f:
-    f.writelines(json.dumps(cuts, indent=4))
+#with open(cutsFile, 'w') as f:
+#    f.writelines(json.dumps(cuts, indent=4))
