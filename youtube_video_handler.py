@@ -6,6 +6,8 @@ from env import Env
 from google_api import GoogleApi
 from youtube_transcript_api.formatters import SRTFormatter
 from moviepy.audio.fx import all as afx
+import moviepy.editor as mpy
+from moviepy.video.fx.all import crop
 
 class YouTubeVideoHandler:
 
@@ -27,9 +29,12 @@ class YouTubeVideoHandler:
         self.__baseDirectory = dir
 
     def downloadAudio(self) -> AudioFileClip:
-        audioFileName = os.path.join(
-            self.__baseDirectory, f'{self.__youtubeObject.title}_audio.mp4')
+        #audio160Kbps = 251
         audio160Kbps = 140
+
+        audioFileName = os.path.join(
+            self.__baseDirectory, f'{self.__youtubeObject.title}_audio.mp3')
+        
         audioFiles = self.__youtubeObject.streams.filter(only_audio=True)
         audioFiles.get_by_itag(audio160Kbps).download(filename=audioFileName)
         return AudioFileClip(audioFileName)
@@ -46,7 +51,7 @@ class YouTubeVideoHandler:
             filter(file_extension="mp4").\
             get_by_itag(fullHdTag).\
             download(filename=os.path.join(self.__baseDirectory,
-                     f'{self.__youtubeObject.title}.mp4'), max_retries=3)
+                     f'{self.__youtubeObject.title}.mp4'), max_retries=5)
 
         videoClip : VideoFileClip = VideoFileClip(videoFileName)
         finalVideoClip : VideoFileClip  = None;     
@@ -59,7 +64,7 @@ class YouTubeVideoHandler:
             finalVideoClip = videoClip
 
         if saveFile:
-            finalVideoClip.write_videofile(finalVideoFileName, audio_codec='libvorbis')
+            finalVideoClip.write_videofile(finalVideoFileName, audio_codec='libmp3lame')
 
         if audioClip:
             self.removeAudioFile(audioClip)
@@ -109,7 +114,22 @@ class YouTubeVideoHandler:
         subVideo.preview()
         return subVideo
 
-    def cut(self, start: str, end: str, video: VideoFileClip, audio: AudioFileClip, fileName: str, isShort: bool = False) -> None:
+    def makeShortAspectRatio(self, originalVideoClip: VideoFileClip) -> VideoFileClip:
+
+        clip = originalVideoClip
+        (w, h) = clip.size
+
+        crop_width = h * 9/16
+        # x1,y1 is the top left corner, and x2, y2 is the lower right corner of the cropped area.
+
+        x1, x2 = (w - crop_width)//2, (w+crop_width)//2
+        y1, y2 = 0, h
+        return crop(clip, x1=x1, y1=y1, x2=x2, y2=y2)
+        # or you can specify center point and cropped width/height
+        # cropped_clip = crop(clip, width=crop_width, height=h, x_center=w/2, y_center=h/2)
+        #cropped_clip.write_videofile('path/to/cropped/video.mp4')        
+
+    def cut(self, start: str, end: str, video: VideoFileClip, audio: AudioFileClip, fileName: str, isShort: bool = False, speedUp: int = 1) -> None:
         #00:00:09,640
         hours, minutes, seconds = start.split(":")
         startInSeconds = (int(hours) * 3600) + (int(minutes) * 60) + float(seconds.replace(",", "."))
@@ -119,6 +139,7 @@ class YouTubeVideoHandler:
         audioClip: AudioFileClip = audio.subclip(start, end)
         audioClip = audioClip.fx(afx.audio_fadeout, 3)
         videoClipWithAudio: VideoFileClip = videoClip.set_audio(audioClip)  
+
         if self.finalInsertionVideoPath and not isShort:
             finalInsertionVideo = VideoFileClip(self.finalInsertionVideoPath)
             finalVideo = concatenate_videoclips([videoClipWithAudio, finalInsertionVideo])
@@ -132,9 +153,19 @@ class YouTubeVideoHandler:
             thumbsUpInsertionVideo = thumbsUpInsertionVideo.set_start(10)
             thumbsUpInsertionVideo = thumbsUpInsertionVideo.fx(vfx.mask_color, color=[0,188,0], thr=100, s=5)    
             finalVideo = CompositeVideoClip([finalVideo, thumbsUpInsertionVideo])
+        
+        if speedUp > 1:
+            finalVideo = finalVideo.fx(vfx.speedx, speedUp) 
 
         videoClipDir = os.path.join(os.path.dirname(videoClip.filename), fileName.split('.')[0])
         if not os.path.exists(videoClipDir):
             os.makedirs(videoClipDir)
-        finalVideo.write_videofile(os.path.join(videoClipDir, fileName), audio_codec='libvorbis')        
+        
+        if isShort:
+            shortVideo = self.makeShortAspectRatio(finalVideo)
+            name, ext = fileName.split('.')
+            shortName = f'{name}_short.{ext}'
+            shortVideo.write_videofile(os.path.join(videoClipDir, shortName), audio_codec='aac')        
+
+        finalVideo.write_videofile(os.path.join(videoClipDir, fileName), audio_codec='aac')        
         

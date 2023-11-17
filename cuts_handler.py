@@ -5,6 +5,7 @@ from youtube_video_handler import YouTubeVideoHandler
 from caption_formatter import CaptionFormatter
 from moviepy.editor import VideoFileClip, AudioFileClip
 
+
 class CutsHandler:
 
     def __init__(self, baseDir: str, youtubeVideoLink: str) -> None:
@@ -46,14 +47,22 @@ class CutsHandler:
         self.__savedataOnMetadata('title', self.__youtubeHandler.getVideoTitle())
         self.__savedataOnMetadata('id', self.__youtubeHandler.getVideoId())
         self.__savedataOnMetadata('uploadDate', datetime.now())
-
-    def prepareCuts(self):  
+    
+    def downloadVideo(self) -> str:
         self.saveMetadatas()        
         self.__youtubeHandler.chanceBaseDir(self.__videoDir)
         self.__youtubeHandler.downloadVideo(False, False)
         self.__youtubeHandler.downloadAudio()
-        captionFormatter = CaptionFormatter()
-        captionPath = self.__youtubeHandler.downloadCaption()
+        return self.__youtubeHandler.downloadCaption()
+
+    def prepareCuts(self):  
+        #self.saveMetadatas()        
+        # self.__youtubeHandler.chanceBaseDir(self.__videoDir)
+        # self.__youtubeHandler.downloadVideo(False, False)
+        # self.__youtubeHandler.downloadAudio()        
+        # captionPath = self.__youtubeHandler.downloadCaption()
+        captionPath = self.downloadVideo()        
+        captionFormatter = CaptionFormatter()        
         cuts = captionFormatter.getCuts(captionPath)        
         self.savePreparedCuts(cuts)
             
@@ -70,7 +79,13 @@ class CutsHandler:
             f.write(json.dumps(cuts))
 
     def retrieveAudioFromLocalStorage(self) -> AudioFileClip:
-        return AudioFileClip(os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}_audio.mp4'))
+        path = os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}_audio.mp3')
+        if not os.path.exists(path=path):
+            path = os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}_audio.mp4')
+            if not os.path.exists(path=path):           
+                path = os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}_audio.webm')
+                            
+        return AudioFileClip(path)
 
     def retrieveVideoFromLocalStorage(self) -> VideoFileClip:
         return VideoFileClip(os.path.join(self.__videoDir, f'{self.__youtubeHandler.getVideoTitle()}.mp4'))
@@ -90,9 +105,8 @@ class CutsHandler:
         video = self.retrieveVideoFromLocalStorage()
         return self.__youtubeHandler.preview(start, end, video, audio)
         
-        
-   
-    def generateCutsFromVideo(self, selectedIds : dict):
+           
+    def generateCutsFromVideo(self, selectedIds : dict, speedUps: list[dict[int, float]]):
         self.selectVideos(selectedIds=selectedIds)
         audioFileClip = self.retrieveAudioFromLocalStorage()
         videoFileClip = self.retrieveVideoFromLocalStorage()
@@ -100,5 +114,15 @@ class CutsHandler:
         #pegar os cortes
         filteredList = list(filter(lambda item: item["selected"], preparedCutsJson))
         for cut in filteredList:
-            self.__youtubeHandler.cut(cut["startTime"], cut["endTime"], videoFileClip, audioFileClip, f'{cut["title"]}.mp4')
-        
+            isShort = "short" in cut and cut["short"]
+            filteredSpeedUps: list[dict[int, float]] = list(filter(lambda item: int(list(item.keys())[0]) == cut["id"], speedUps))
+            speedUpValue = 1 if len(filteredSpeedUps) == 0 else list(filteredSpeedUps[0].values())[0]
+            self.__youtubeHandler.cut(
+                cut["startTime"], 
+                cut["endTime"], 
+                videoFileClip, 
+                audioFileClip, 
+                f'{cut["title"]}.mp4',
+                isShort=isShort,
+                speedUp=speedUpValue
+                )

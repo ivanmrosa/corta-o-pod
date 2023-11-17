@@ -1,4 +1,5 @@
 import json
+import re
 from env import Env
 from api import RequestApi
 
@@ -15,6 +16,19 @@ class ChatGpt:
         self.__api.addHeader("Content-Type", f"application/json; charset=utf-8")
             
     
+    def execute_regex(self, text, regex, groupsAsString = True) -> list[str]:
+        result : list[str]= []
+        got = re.findall(regex, text, re.DOTALL)
+        for item in got:
+            if type(item) == tuple and groupsAsString:
+                a = ""
+                for x in item:
+                    a += x
+                result.append(a)
+            else:
+                result.append(item)
+        return result  
+
     def requireCuts(self, captionText: str) -> dict:
         chatMessages : list = []
         chatMessages.append({"role": "user", "content": f'{self.__chatGptPhraseToRequestCuts} "{captionText[0: 10_000]}"'})
@@ -27,9 +41,14 @@ class ChatGpt:
         except Exception as e:
             print(e)
             response=""
-        print(response)
+                    
         try:    
-            data =  json.loads(response)
+            responseRegex = self.execute_regex(response, '\{.*\}')            
+            text = ""
+            for r in responseRegex:                
+                text += f'{r},'
+            text = f'[{text[:-1]}]'
+            data = json.loads(text)
         except Exception as e:
             print(e)
             return []

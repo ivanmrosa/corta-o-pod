@@ -12,7 +12,7 @@ from flask import Flask, request, render_template, Response
 from env import Env
 from cuts_handler import CutsHandler
 from flask import render_template, request
-import webview
+#import webview
 
 dir = Env().getEnvValue('VIDEOS_DIRECTORY')
 app = Flask( __name__)
@@ -60,12 +60,30 @@ def generateCuts():
     meta = CutsHandler.retriveMetadatas(handler.getVideoDirectory())
     return Response(json.dumps(meta), content_type="application/json")
 
+@app.route('/download-video', methods=['POST'])
+def downloadVideo():        
+    data = json.loads(request.data)      
+    handler = CutsHandler(dir, data["link"])
+    
+    alreadySavedMeta = CutsHandler.retriveMetadatas(handler.getVideoDirectory())
+    if len(alreadySavedMeta.keys()) > 0:
+        return alreadySavedMeta
+
+    handler.downloadVideo()    
+    handler.savePreparedCuts([])    
+    meta = CutsHandler.retriveMetadatas(handler.getVideoDirectory())
+    return Response(json.dumps(meta), content_type="application/json")
+
+
+
 @app.route('/generate-video-cuts', methods=['POST'])
 def generateVideoCuts():
     data = json.loads(request.data)    
     selectedIds = [ int(id) for id in data["ids"]]
-    handler = CutsHandler(dir, data["videoLink"])    
-    handler.generateCutsFromVideo(selectedIds=selectedIds)
+    #speedUps = [ float(id) for id in data["speedUps"]]
+    handler = CutsHandler(dir, data["videoLink"])  
+      
+    handler.generateCutsFromVideo(selectedIds=selectedIds, speedUps=data["speedUps"])
     return Response(json.dumps({"message": "Video clips generated successfully!"}), content_type="application/json")
 
 @app.route('/delete-youtube-video', methods=['POST'])
@@ -106,18 +124,22 @@ def editCut():
     handler.savePreparedCuts(cuts=cuts)
     return {"message": "Cut saved!" if saved else "Cut was not found."}
 
-@app.route('/preview-cut', methods=['GET'])
-def preview():
-    link = request.args['link']        
-    #data = json.loads(request.data)    
-    handler = CutsHandler(dir, link)
-    handler.getPreview(10, 30)
-    return {"message": "Preview executed."}
+@app.route('/donwload-video-page')
+def downloadVideoPage():
+    return render_template('download-video.html')
 
-@app.route("/preview-video", methods=["GET"])
-def previewVideo():
-    link = request.args['link']        
-    return render_template('preview-video.html', link=link)
+# @app.route('/preview-cut', methods=['GET'])
+# def preview():
+#     link = request.args['link']        
+#     #data = json.loads(request.data)    
+#     handler = CutsHandler(dir, link)
+#     handler.getPreview(10, 30)
+#     return {"message": "Preview executed."}
+
+# @app.route("/preview-video", methods=["GET"])
+# def previewVideo():
+#     link = request.args['link']        
+#     return render_template('preview-video.html', link=link)
 
 
 
@@ -176,6 +198,10 @@ def get_file():
 def start_server():
     app.run(host='0.0.0.0', debug=False, port=8080)
     #app.run()
+
+
+
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True, port=8080)        
