@@ -105,7 +105,6 @@ class CutsHandler:
         video = self.retrieveVideoFromLocalStorage()
         return self.__youtubeHandler.preview(start, end, video, audio)
         
-           
     def generateCutsFromVideo(self, selectedIds : dict, speedUps: list[dict[int, float]]):
         self.selectVideos(selectedIds=selectedIds)
         audioFileClip = self.retrieveAudioFromLocalStorage()
@@ -115,8 +114,10 @@ class CutsHandler:
         filteredList = list(filter(lambda item: item["selected"], preparedCutsJson))
         for cut in filteredList:
             isShort = "short" in cut and cut["short"]
+
             filteredSpeedUps: list[dict[int, float]] = list(filter(lambda item: int(list(item.keys())[0]) == cut["id"], speedUps))
             speedUpValue = 1 if len(filteredSpeedUps) == 0 else list(filteredSpeedUps[0].values())[0]
+
             self.__youtubeHandler.cut(
                 cut["startTime"], 
                 cut["endTime"], 
@@ -124,5 +125,5 @@ class CutsHandler:
                 audioFileClip, 
                 f'{cut["title"]}.mp4',
                 isShort=isShort,
-                speedUp=speedUpValue
-                )
+                speedUp=speedUpValue,                
+            )
