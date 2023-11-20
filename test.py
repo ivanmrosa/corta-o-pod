@@ -3,7 +3,7 @@ import sys
 import json
 import shutil
 from services.caption_formatter import CaptionFormatter
-from youtube_video_handler import YouTubeVideoHandler
+from app.services.youtube_video_handler import YouTubeVideoHandler
 
 
 

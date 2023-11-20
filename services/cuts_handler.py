@@ -1,7 +1,7 @@
 import os
 import json
 from datetime import datetime
-from youtube_video_handler import YouTubeVideoHandler
+from services.youtube_video_handler import YouTubeVideoHandler
 from services.caption_formatter import CaptionFormatter
 from moviepy.editor import VideoFileClip, AudioFileClip
 
