@@ -2,7 +2,7 @@ import functools
 import json
 from flask import render_template, request
 from flask.views import MethodView
-from cuts_handler import CutsHandler
+from services.cuts_handler import CutsHandler
 from env import Env
 
 

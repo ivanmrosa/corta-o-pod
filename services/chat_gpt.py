@@ -1,7 +1,7 @@
 import json
 import re
 from env import Env
-from api import RequestApi
+from services.api import RequestApi
 
 
 class ChatGpt:

@@ -2,7 +2,7 @@ import os
 import sys
 import json
 import shutil
-from caption_formatter import CaptionFormatter
+from services.caption_formatter import CaptionFormatter
 from youtube_video_handler import YouTubeVideoHandler
 
 

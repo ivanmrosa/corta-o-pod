@@ -4,7 +4,7 @@ from pathlib import Path
 import shutil
 from flask import Response, render_template, request
 from flask.views import MethodView
-from cuts_handler import CutsHandler
+from services.cuts_handler import CutsHandler
 from env import Env
 
 

@@ -2,7 +2,7 @@ import os
 import re
 from flask import Response, request
 from flask.views import MethodView
-from cuts_handler import CutsHandler
+from services.cuts_handler import CutsHandler
 from env import Env
 
 

@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime
 from youtube_video_handler import YouTubeVideoHandler
-from caption_formatter import CaptionFormatter
+from services.caption_formatter import CaptionFormatter
 from moviepy.editor import VideoFileClip, AudioFileClip
 
 

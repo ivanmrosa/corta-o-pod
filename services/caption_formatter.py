@@ -1,4 +1,4 @@
-from chat_gpt import ChatGpt
+from services.chat_gpt import ChatGpt
 
 
 class CaptionFormatter:

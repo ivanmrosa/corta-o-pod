@@ -1,5 +1,5 @@
 from env import Env
-from api import RequestApi
+from services.api import RequestApi
 from youtube_transcript_api import YouTubeTranscriptApi
 
 

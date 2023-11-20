@@ -3,7 +3,7 @@ from pytube import YouTube
 from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips, CompositeVideoClip, vfx
 import logging
 from env import Env
-from google_api import GoogleApi
+from services.google_api import GoogleApi
 from youtube_transcript_api.formatters import SRTFormatter
 from moviepy.audio.fx import all as afx
 import moviepy.editor as mpy
