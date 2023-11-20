@@ -1,4 +1,5 @@
 from flask import Flask
+from controllers.configuration import ConfigurationController
 from controllers.add_video_controller import AddVideoController
 from controllers.cuts_controller import PreCutsController, VideoCutsController
 from controllers.download_controller import DownloadController
@@ -15,5 +16,6 @@ class RouterService:
         app.add_url_rule('/generate-video-cuts', view_func=VideoCutsController.as_view(name='generate-video-cuts'))
         app.add_url_rule('/download', view_func=DownloadController.as_view(name='download'))
         app.add_url_rule('/stream-video', view_func=StreamController.as_view(name='stream'))
+        app.add_url_rule('/configuration', view_func=ConfigurationController.as_view(name='configuration'))
         
        
