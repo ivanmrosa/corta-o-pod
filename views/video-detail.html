@@ -308,8 +308,8 @@
          
         let requestData = {"cut": cut, "link": document.getElementById("videolink").value};
     
-        let respose = await fetch('/edit-cut', {
-          method: 'POST',
+        let respose = await fetch('/video-detail', {
+          method: 'PUT',
           headers: {
             "Content-Type": "application/javascript"
           },
