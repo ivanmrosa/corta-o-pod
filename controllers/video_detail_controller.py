@@ -17,7 +17,11 @@ class VideoDetailController(MethodView):
         handler = CutsHandler(self.dir, link)
         metaData = CutsHandler.retriveMetadatas(handler.getVideoDirectory())
         cuts = handler.retrievePreparedCuts()    
-        return render_template('video-detail.html', cuts=cuts, link=link, videoTitle=metaData["title"])
+        return render_template('video-detail.html', 
+                               cuts=cuts, link=link, 
+                               videoTitle=metaData["title"] 
+                                          if "title" in metaData 
+                                          else "Unknown")
     
     def put(self) -> str:
         data = json.loads(request.data)    

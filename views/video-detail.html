@@ -27,65 +27,68 @@
       <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
     </svg></button>    
   </div>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-         <th>Stat time</th>
-         <th>End time</th>
-         <th>Title</th>
-         <th>Resume</th>         
-         <th>Path</th>
-         <th>Short</th>         
-         <th>Selected</th>                  
-         <th>Speed up</th>
-         <th>*</th>
-         <th>*</th>
-      </tr>
-    </thead>
-    {% for cut in cuts %}       
-       <tr> 
-        <td data-name="startTime">{{cut.startTime}}</td>
-        <td data-name="endTime">{{cut.endTime}}</td>
-        <td data-name="title">{{cut.title}}</td>
-        <td data-name="resume">{{cut.resume}}</td>        
-        <td data-name="cutPath">{{cut.cutPath}}</td>
-        <td data-name="short">{{cut.short}}</td>
-        <td><input type="checkbox" value="{{cut.id}}" class="selectedcut"></td>
-        <td>
-          <select class="speedup" data-id="{{cut.id}}">
-            <option  selected value="1">
-                1
-            </option>
-            <option value="1.10">
-              1.10
-            </option>            
-            <option value="1.25">
-              1.25
-            </option>
-            <option value="1.5">
-              1.5
-            </option>
-            <option value="1.75">
-              1.75
-            </option>
-            <option value="2">
-              2
-            </option>
-          </select>
-        </td>
-        <td><span style="cursor: pointer;"  onclick="editRow(this, '{{cut.id}}')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
-          <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001z"/>
-        </svg></span></td>
-        <td><span onclick="preview(this, '{{cut.id}}')" style="cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tv-fill" viewBox="0 0 16 16">
-               <path d="M2.5 13.5A.5.5 0 0 1 3 13h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zM2 2h12s2 0 2 2v6s0 2-2 2H2s-2 0-2-2V4s0-2 2-2z"/>
-               </svg>
-            </span>
-        </td>
-      </tr>
-    {% else %}
-       <tr><td colspan="6">No cuts found</td> </tr>
-    {% endfor %}  
-  </table>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+           <th>Stat time</th>
+           <th>End time</th>
+           <th>Title</th>
+           <th>Resume</th>         
+           <th>Path</th>
+           <th>Short</th>         
+           <th>Selected</th>                  
+           <th>Speed up</th>
+           <th>*</th>
+           <th>*</th>
+        </tr>
+      </thead>
+      {% for cut in cuts %}       
+         <tr> 
+          <td data-name="startTime">{{cut.startTime}}</td>
+          <td data-name="endTime">{{cut.endTime}}</td>
+          <td data-name="title">{{cut.title}}</td>
+          <td data-name="resume">{{cut.resume}}</td>        
+          <td data-name="cutPath">{{cut.cutPath}}</td>
+          <td data-name="short">{{cut.short}}</td>
+          <td><input type="checkbox" value="{{cut.id}}" class="selectedcut"></td>
+          <td>
+            <select class="speedup" data-id="{{cut.id}}">
+              <option  selected value="1">
+                  1
+              </option>
+              <option value="1.10">
+                1.10
+              </option>            
+              <option value="1.25">
+                1.25
+              </option>
+              <option value="1.5">
+                1.5
+              </option>
+              <option value="1.75">
+                1.75
+              </option>
+              <option value="2">
+                2
+              </option>
+            </select>
+          </td>
+          <td><span style="cursor: pointer;"  onclick="editRow(this, '{{cut.id}}')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
+            <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001z"/>
+          </svg></span></td>
+          <td><span onclick="preview(this, '{{cut.id}}')" style="cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tv-fill" viewBox="0 0 16 16">
+                 <path d="M2.5 13.5A.5.5 0 0 1 3 13h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zM2 2h12s2 0 2 2v6s0 2-2 2H2s-2 0-2-2V4s0-2 2-2z"/>
+                 </svg>
+              </span>
+          </td>
+        </tr>
+      {% else %}
+         <tr><td colspan="6">No cuts found</td> </tr>
+      {% endfor %}  
+    </table>
+  </div>
+  
   <div class="card">
     <button type="button" class="btn btn-primary" onclick="proccessVideos()">      
       Generate video clips
@@ -166,8 +169,8 @@
         <h5 class="modal-title">Preview....</h5>        
       </div>
       <div class="modal-body">
-        <div class="embed-responsive">
-          <video controls width="450" id="preview-video" class="embed-responsive-item" playsinline preload=auto>
+        <div class="embed-responsive embed-responsive embed-responsive-1by1">
+          <video controls width="100%" id="preview-video" class="embed-responsive-item" playsinline preload=auto>
             <source id="preview-source" src="" type="video/mp4" />
           </video>            
         </div>
