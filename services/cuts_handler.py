@@ -33,7 +33,7 @@ class CutsHandler:
             metas = {}
             for line in lines:
                 keyValue = line.split("==>")
-                metas.update({keyValue[0]: keyValue[1]})
+                metas.update({keyValue[0]: keyValue[1].replace('\n', '')})
             return metas
         except Exception as e:
             print(e)

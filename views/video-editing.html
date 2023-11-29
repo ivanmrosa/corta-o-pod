@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}
+ Video editing
+{% endblock %}
+
+
+{% block header %}
+<h1>Video editing</h1>
+{% endblock %}
+
+{% block actions %}
+  <a class="btn btn-primary" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-fill" viewBox="0 0 16 16">
+    <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>
+    <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Z"/>
+  </svg> Go home</a>
+
+  <a class="btn btn-primary" href="javascript:void(0)" onclick="listYoutubeVideos()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-fill" viewBox="0 0 16 16">
+        <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>
+        <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Z"/>
+    </svg> Add video
+  </a>  
+{% endblock %}
+
+{% block content %}
+
+<div class="embed-responsive embed-responsive embed-responsive-1by1">
+    <video controls width="100%" id="preview-video" class="embed-responsive-item" playsinline preload=auto>
+      <source id="preview-source" src="" type="video/mp4" />
+    </video>            
+</div>
+
+
+
+
+
+<div class="modal" tabindex="-1" id="modal-select-video">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Select the video</h5>        
+        </div>
+        <div class="modal-body">
+
+        </div>      
+      </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+    async function apiGet(endpoint){
+        const response = await fetch(endpoint, {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json"
+            }        
+        });
+        return response.json()
+    }
+    
+    function getFromBucket(method, urlParams){
+        return apiGet(`/video-editing/bucket?method=${method}&${urlParams}`);
+    }
+
+
+    function listYoutubeVideos(){
+        getFromBucket('getYoutubeVideos').then((data)=>{
+            let modalSelectVideo = new bootstrap.Modal(
+                document.getElementById('modal-select-video'),
+               {backdrop: 'static', keyboard: true}
+            );
+            
+            modalSelectVideo.toggle();
+
+            let modalBody = document.querySelector('#modal-select-video .modal-body');
+            let html = '<ul class="list-group">';
+            
+            for (let index = 0; index < data.length; index++) {
+                const video = data[index];
+                html += `<button type="button" class="list-group-item list-group-item-action" onclick="listVideoCuts('${video['link']}')">${video['title']}</button>`
+            }
+            html += '</ul>'
+            document.querySelector('#modal-select-video .modal-body').innerHTML = html;
+        })
+    }
+    
+    function listVideoCuts(youtubeLink){
+        getFromBucket('getYoutubeCuts', `link=${youtubeLink}`).then((data)=>{
+
+            let modalBody = document.querySelector('#modal-select-video .modal-body');
+            let html = '<ul class="list-group">';
+            
+            for (let index = 0; index < data.length; index++) {                
+                const video = data[index];
+                console.log(video)
+                if(!video['cutPath']) continue;
+                html += `<button type="button" class="list-group-item list-group-item-action" onclick="addVideoCut('${video['id']}', '${youtubeLink}', '${video['path']}')">${video['title']}</button>`
+            }
+            html += '</ul>'
+            document.querySelector('#modal-select-video .modal-body').innerHTML = html;
+        })
+    }
+
+    function addVideoCut(id, videoLink, path){        
+        let modalSelectVideo = new bootstrap.Modal(
+                document.getElementById('modal-select-video'),
+               {backdrop: 'static', keyboard: true}
+        );                        
+
+        document.getElementById("preview-source").setAttribute("src", `/stream-video?link=${videoLink}&id=${id}`);
+        document.getElementById("preview-video").load();
+        modalSelectVideo.hide()
+    }
+
+</script>
+
+{% endblock %}
+
+{% block css %}
+  <!-- <style>
+    .list-group-item {
+       cursor: pointer;   
+    }
+
+    .list-group-item:hover {
+       background-color: aliceblue;
+    }
+  </style> -->
+{% endblock %}
