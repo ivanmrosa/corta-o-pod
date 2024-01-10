@@ -202,14 +202,13 @@
         <h5 class="modal-title">Preview....</h5>        
       </div>
       <div class="modal-body">
-        <div class="embed-responsive embed-responsive-1by1">
-            <iframe id="ytplayer" class="embed-responsive-item" type="text/html" width="100%" height="360"
-            src=""
-            frameborder="0"></iframe>          
+        <div class="embed-responsive embed-responsive-1by1" id="ytplayer-container">
+            <iframe id="ytplayer" class="embed-responsive-item" type="text/html" width="100%" height="360" src="" frameborder="0" data-cookieconsent="marketing">
+            </iframe>
         </div>
       </div>      
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>        
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick='document.getElementById("ytplayer").setAttribute("src", "")'>Close</button>        
       </div>
     </div>
     </div>
@@ -390,7 +389,6 @@
 
         let startTime = calculateSeconds(cut["startTime"]);
         let endTime = calculateSeconds(cut["endTime"]);
-
         
         //http://www.youtube.com/embed/M7lc1UVf-VE?autoplay=1&origin=http://example.com
         let videoId = ''
@@ -401,6 +399,7 @@
         }
         
         document.getElementById("ytplayer").setAttribute("src", `http://www.youtube.com/embed/${videoId}?autoplay=0&origin=http://127.0.0.1&start=${startTime}&end=${endTime}`);        
+        
         let editingModel = new bootstrap.Modal(
             document.getElementById('modalpreviewfromyoutube'), 
             {backdrop: 'static', keyboard: false}         

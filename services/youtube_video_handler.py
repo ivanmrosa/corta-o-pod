@@ -137,7 +137,8 @@ class YouTubeVideoHandler:
         endInSecodns = (int(hours) * 3600) + (int(minutes) * 60) + float(seconds.replace(",", "."))
         videoClip: VideoFileClip = video.subclip(startInSeconds, endInSecodns)
         audioClip: AudioFileClip = audio.subclip(start, end)
-        audioClip = audioClip.fx(afx.audio_fadeout, 3)
+        if not isShort:
+            audioClip = audioClip.fx(afx.audio_fadeout, 3)
         videoClipWithAudio: VideoFileClip = videoClip.set_audio(audioClip)  
 
         if self.finalInsertionVideoPath and not isShort:
