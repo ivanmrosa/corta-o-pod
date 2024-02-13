@@ -21,13 +21,15 @@ class DownloadController(MethodView):
     def post(self) -> Response:
         data = json.loads(request.data)      
         handler = CutsHandler(self.dir, data["link"])
+        refresh = 'refresh' in data and data['refresh']
         
         alreadySavedMeta = CutsHandler.retriveMetadatas(handler.getVideoDirectory())
-        if len(alreadySavedMeta.keys()) > 0:
+        if not refresh and len(alreadySavedMeta.keys()) > 0:
             return alreadySavedMeta
 
         handler.downloadVideo()    
-        handler.savePreparedCuts([])    
+        if not refresh:            
+            handler.savePreparedCuts([])    
         meta = CutsHandler.retriveMetadatas(handler.getVideoDirectory())
         return Response(json.dumps(meta), content_type="application/json")
 

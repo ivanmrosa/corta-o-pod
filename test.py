@@ -66,11 +66,15 @@ def remove_video_clip(videoPath: str, parts_to_keep: list[tuple[str, str]]):
     # cutting out some part from the clip     
     for cl in parts_to_keep:        
         clips.append(clip.subclip(cl[0], cl[1]))   
-    
+    newpath = f"{videoPath.split('.')[0]}_new.mp4"
+    oldPath = f"{videoPath.split('.')[0]}_old.mp4"
     new_clip = concatenate_videoclips(clips)
-    new_clip.write_videofile(os.path.join(f"{videoPath.split('.')[0]}_new.mp4"), audio_codec='aac')
+    new_clip.write_videofile(os.path.join(newpath), audio_codec='aac')
+    os.rename(videoPath, oldPath)
+    os.rename(newpath, videoPath)
 
 
-remove_video_clip("/Users/ivanmuniz/Documents/youtube/corta o pod/videos/SACANI RESPONDE [VULCÕES] - Ciência Sem Fim #226_uBB6CkGV974/SERGIO SACANI - AULA SOBRE VULCÕES/SERGIO SACANI - AULA SOBRE VULCÕES.mp4", 
-                  [('00:06:30,000', '00:26:40,000')])
+
+remove_video_clip("/Users/ivanmuniz/Documents/youtube/corta o pod/videos/MARIA PAULA - Inteligência Ltda. Podcast #1081_tUGJheE2d1E/SOBRENATURAL ou CONICIDÊNCIA?/SOBRENATURAL ou CONICIDÊNCIA?.mp4", 
+                  [('00:00:00,000', '00:00:57,500')])
     

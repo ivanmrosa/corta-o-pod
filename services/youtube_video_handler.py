@@ -157,16 +157,17 @@ class YouTubeVideoHandler:
         
         if speedUp > 1:
             finalVideo = finalVideo.fx(vfx.speedx, speedUp) 
+            
 
         videoClipDir = os.path.join(os.path.dirname(videoClip.filename), fileName.split('.')[0])
         if not os.path.exists(videoClipDir):
             os.makedirs(videoClipDir)
         
-        if isShort:
-            shortVideo = self.makeShortAspectRatio(finalVideo)
-            name, ext = fileName.split('.')
-            shortName = f'{name}_short.{ext}'
-            shortVideo.write_videofile(os.path.join(videoClipDir, shortName), audio_codec='aac')        
+        # if isShort:
+        #     shortVideo = self.makeShortAspectRatio(finalVideo)
+        #     name, ext = fileName.split('.')
+        #     shortName = f'{name}_short.{ext}'
+        #     shortVideo.write_videofile(os.path.join(videoClipDir, shortName), audio_codec='aac')        
 
         finalVideo.write_videofile(os.path.join(videoClipDir, fileName), audio_codec='aac')        
         
