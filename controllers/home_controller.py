@@ -31,7 +31,7 @@ class HomeController(MethodView):
     
     def delete(self)->str:
         data = json.loads(request.data)    
-        handler = CutsHandler(dir, data["link"])
-        videoDir = handler.getVideoDirectory()
+        handler = CutsHandler(self.dir, data["link"])
+        videoDir = handler.getVideoDirectory()        
         shutil.rmtree(videoDir)
         return {"message": "Video deleted!"}

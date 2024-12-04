@@ -52,7 +52,7 @@ class CutsHandler:
         self.saveMetadatas()        
         self.__youtubeHandler.chanceBaseDir(self.__videoDir)
         self.__youtubeHandler.downloadVideo(False, False)
-        self.__youtubeHandler.downloadAudio()
+        #self.__youtubeHandler.downloadAudio()
         return self.__youtubeHandler.downloadCaption()
 
     def prepareCuts(self):  
@@ -107,7 +107,7 @@ class CutsHandler:
         
     def generateCutsFromVideo(self, selectedIds : dict, speedUps: list[dict[int, float]]):
         self.selectVideos(selectedIds=selectedIds)
-        audioFileClip = self.retrieveAudioFromLocalStorage()
+        #audioFileClip = self.retrieveAudioFromLocalStorage()
         videoFileClip = self.retrieveVideoFromLocalStorage()
         preparedCutsJson: list[dict] = self.retrievePreparedCuts()
         #pegar os cortes
@@ -122,7 +122,7 @@ class CutsHandler:
                 cut["startTime"], 
                 cut["endTime"], 
                 videoFileClip, 
-                audioFileClip, 
+                None, 
                 f'{cut["title"]}.mp4',
                 isShort=isShort,
                 speedUp=speedUpValue,                

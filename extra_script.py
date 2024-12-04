@@ -4,6 +4,7 @@ from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips,
 from moviepy.audio.fx import all as afx
 from pytube import YouTube
 
+
 def prepareVideoEndingIsertion():
     audio = AudioFileClip('/Users/ivanmuniz/Documents/youtube/corta o pod/video-finishing/Lawrence - TrackTribe.mp3')
     video = VideoFileClip('/Users/ivanmuniz/Documents/youtube/corta o pod/video-finishing/corta o pod final.mp4')

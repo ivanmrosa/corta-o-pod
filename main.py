@@ -1,7 +1,18 @@
 from flask import Flask 
 from env import Env
 from services.router_service import RouterService
-#import webview
+
+#sometimes is needed to change cipher.py to another regex
+
+from pytube. innertube import _default_clients
+
+_default_clients[ "ANDROID"][ "context"]["client"]["clientVersion"] = "19.08.35"
+_default_clients["IOS"]["context"]["client"]["clientVersion"] = "19.08.35"
+_default_clients[ "ANDROID_EMBED"][ "context"][ "client"]["clientVersion"] = "19.08.35"
+_default_clients[ "IOS_EMBED"][ "context"]["client"]["clientVersion"] = "19.08.35"
+_default_clients["IOS_MUSIC"][ "context"]["client"]["clientVersion"] = "6.41"
+_default_clients[ "ANDROID_MUSIC"] = _default_clients[ "ANDROID_CREATOR" ]
+
 
 dir = Env().getEnvValue('VIDEOS_DIRECTORY')
 app = Flask(__name__, template_folder='views')

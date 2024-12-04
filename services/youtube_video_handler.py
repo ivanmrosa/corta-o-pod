@@ -1,5 +1,6 @@
 import os
-from pytube import YouTube
+import uuid
+#from pytube import YouTube
 from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips, CompositeVideoClip, vfx
 import logging
 from env import Env
@@ -8,73 +9,91 @@ from youtube_transcript_api.formatters import SRTFormatter
 from moviepy.audio.fx import all as afx
 import moviepy.editor as mpy
 from moviepy.video.fx.all import crop
+from yt_dlp import YoutubeDL
 
 class YouTubeVideoHandler:
 
     def __init__(self, videoLink: str, baseDirectory: str) -> None:
-        self.__youtubeObject = YouTube(videoLink)
+        self.videoLink = videoLink
+        #self.__youtubeObject = YouTube(videoLink)
         self.__baseDirectory = baseDirectory
         self.__env = Env()
         self.finalInsertionVideoPath = self.__env.getEnvValue('VIDEO_ENDING_INSERTION_PATH')
         self.thumbsUpInsertionVideoPath = self.__env.getEnvValue('VIDEO_THUMBS_UP_INSERTION_PATH')
         self.__googleApi = GoogleApi()
-    
+            
     def getVideoTitle(self):
-        return self.__youtubeObject.title
+        #return self.__youtubeObject.title
+        #return self.videoLink
+        return self.getVideoId()
 
     def getVideoId(self):
-        return self.__youtubeObject.video_id
+        #return self.__youtubeObject.video_id
+        
+        return self.videoLink.split("v=")[1].split("=")[0]
     
     def chanceBaseDir(self, dir):
         self.__baseDirectory = dir
 
-    def downloadAudio(self) -> AudioFileClip:
-        #audio160Kbps = 251
-        audio160Kbps = 140
-
-        audioFileName = os.path.join(
-            self.__baseDirectory, f'{self.__youtubeObject.title}_audio.mp3')
-        
-        audioFiles = self.__youtubeObject.streams.filter(only_audio=True)
-        audioFiles.get_by_itag(audio160Kbps).download(filename=audioFileName)
-        return AudioFileClip(audioFileName)
+    #def downloadAudio(self) -> AudioFileClip:
+    #    #audio160Kbps = 251
+    #    audio160Kbps = 140
+    #
+    #    audioFileName = os.path.join(
+    #        self.__baseDirectory, f'{self.__youtubeObject.title}_audio.mp3')
+    #    
+    #    audioFiles = self.__youtubeObject.streams.filter(only_audio=True)
+    #    audioFiles.get_by_itag(audio160Kbps).download(filename=audioFileName)
+    #    return AudioFileClip(audioFileName)
 
     def downloadVideo(self, insertAudio: bool, saveFile: bool = True) -> VideoFileClip:
-        fullHdTag = 137
+        #fullHdTag = 137
 
         videoFileName = os.path.join(
-            self.__baseDirectory, f'{self.__youtubeObject.title}.mp4')
-        finalVideoFileName = os.path.join(
-            self.__baseDirectory, f'{self.__youtubeObject.title}_final.mp4')
+            self.__baseDirectory, f'{self.getVideoTitle()}.mp4')
+        #finalVideoFileName = os.path.join(
+        #    self.__baseDirectory, f'{self.getVideoTitle()}_final.mp4')
         
-        self.__youtubeObject.streams.\
-            filter(file_extension="mp4").\
-            get_by_itag(fullHdTag).\
-            download(filename=os.path.join(self.__baseDirectory,
-                     f'{self.__youtubeObject.title}.mp4'), max_retries=5)
+        #self.__youtubeObject.streams.\
+        #    filter(file_extension="mp4").\
+        #    get_by_itag(fullHdTag).\
+        #    download(filename=os.path.join(self.__baseDirectory,
+        #             f'{self.__youtubeObject.title}.mp4'), max_retries=5)
 
-        videoClip : VideoFileClip = VideoFileClip(videoFileName)
-        finalVideoClip : VideoFileClip  = None;     
-        audioClip : AudioFileClip = None 
+        options = {
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]',  # Baixa a melhor qualidade disponível (vídeo + áudio)
+            #'subtitleslangs': ['en'],  # Idioma das legendas (ex.: 'en' para inglês)
+            #'writeautomaticsub': False,  # Baixar legendas automáticas, se não houver manuais
+            #'subtitlesformat': 'srt',  # Formato das legendas ('srt' ou 'vtt')
+            'outtmpl': videoFileName,  # Caminho e nome do arquivo de saída
+        }
+
+        # Baixar o vídeo e as legendas
+        with YoutubeDL(options) as ydl:
+            ydl.download([self.videoLink])        
+
+        return VideoFileClip(videoFileName)
+        #finalVideoClip : VideoFileClip  = None;     
+        #audioClip : AudioFileClip = None 
         
-        if insertAudio:
-            audioClip : AudioFileClip = self.downloadAudio()            
-            finalVideoClip = self.linkAudioToVideo(videoFileClip=videoClip, audioFileClip=audioClip)        
-        else: 
-            finalVideoClip = videoClip
+        #if insertAudio:
+        #    audioClip : AudioFileClip = self.downloadAudio()            
+        #    finalVideoClip = self.linkAudioToVideo(videoFileClip=videoClip, audioFileClip=audioClip)        
+        #else: 
+        #finalVideoClip = videoClip
 
-        if saveFile:
-            finalVideoClip.write_videofile(finalVideoFileName, audio_codec='libmp3lame')
+        #if saveFile:
+        #    finalVideoClip.write_videofile(finalVideoFileName, audio_codec='libmp3lame')
 
-        if audioClip:
-            self.removeAudioFile(audioClip)
+        #if audioClip:
+        #    self.removeAudioFile(audioClip)
                 
         
-        if saveFile:
-            videoClip.close()
-            os.remove(videoFileName)
+        #if saveFile:
+        #    videoClip.close()
+        #    os.remove(videoFileName)
             
-        return finalVideoClip
+        #return finalVideoClip
     
     def removeAudioFile(self, audioFileClip: AudioFileClip):
         audioFileClip.close()
@@ -93,14 +112,22 @@ class YouTubeVideoHandler:
         try:
 
             filePathSTR: str = os.path.join(
-                self.__baseDirectory, f'{self.__youtubeObject.title}.str'
+                self.__baseDirectory, f'{self.getVideoTitle()}.str'
             )
+
+            #subTitlePath = os.path.join(
+            #    self.__baseDirectory, f'{self.getVideoTitle()}.en.str')
             
-            caption = self.__googleApi.getVideoCaption(self.__youtubeObject.video_id, languageCode)
+            #if not os.path.exists(subTitlePath):
+            #    subTitlePath = os.path.join(
+            #        self.__baseDirectory, f'{self.getVideoTitle()}.en.vtt')
+
+            
+            caption = self.__googleApi.getVideoCaption(self.getVideoId(), languageCode)
             strFormatter = SRTFormatter()
                         
             with open(filePathSTR, 'w') as fileStr:
-                fileStr.writelines(strFormatter.format_transcript(caption))
+                 fileStr.writelines(strFormatter.format_transcript(caption))
             
             return filePathSTR
         except Exception as e:
@@ -136,10 +163,13 @@ class YouTubeVideoHandler:
         hours, minutes, seconds = end.split(":")
         endInSecodns = (int(hours) * 3600) + (int(minutes) * 60) + float(seconds.replace(",", "."))
         videoClip: VideoFileClip = video.subclip(startInSeconds, endInSecodns)
-        audioClip: AudioFileClip = audio.subclip(start, end)
-        if not isShort:
-            audioClip = audioClip.fx(afx.audio_fadeout, 3)
-        videoClipWithAudio: VideoFileClip = videoClip.set_audio(audioClip)  
+        if audio:
+            audioClip: AudioFileClip = audio.subclip(start, end)
+            if not isShort:
+                audioClip = audioClip.fx(afx.audio_fadeout, 3)
+            videoClipWithAudio: VideoFileClip = videoClip.set_audio(audioClip)  
+        else:
+            videoClipWithAudio = videoClip
 
         if self.finalInsertionVideoPath and not isShort:
             finalInsertionVideo = VideoFileClip(self.finalInsertionVideoPath)
