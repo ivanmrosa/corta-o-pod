@@ -15,7 +15,7 @@ _default_clients[ "ANDROID_MUSIC"] = _default_clients[ "ANDROID_CREATOR" ]
 
 
 dir = Env().getEnvValue('VIDEOS_DIRECTORY')
-app = Flask(__name__, template_folder='views')
+app = Flask(__name__, template_folder='views', static_folder='static')
 
 router = RouterService()
 router.configure_routes(app)

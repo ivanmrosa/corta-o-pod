@@ -29,8 +29,12 @@ class YouTubeVideoHandler:
 
     def getVideoId(self):
         #return self.__youtubeObject.video_id
-        
-        return self.videoLink.split("v=")[1].split("=")[0]
+        #https://www.youtube.com/live/3TBzFcQpZBU
+        if "v=" in self.videoLink:
+            return self.videoLink.split("v=")[1].split("=")[0]
+        else:
+            return self.videoLink.split("/")[-1]
+
     
     def chanceBaseDir(self, dir):
         self.__baseDirectory = dir
