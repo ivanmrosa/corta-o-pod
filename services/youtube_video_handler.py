@@ -55,18 +55,10 @@ class YouTubeVideoHandler:
 
         videoFileName = os.path.join(
             self.__baseDirectory, f'{self.getVideoTitle()}.mp4')
-        #finalVideoFileName = os.path.join(
-        #    self.__baseDirectory, f'{self.getVideoTitle()}_final.mp4')
-        
-        #self.__youtubeObject.streams.\
-        #    filter(file_extension="mp4").\
-        #    get_by_itag(fullHdTag).\
-        #    download(filename=os.path.join(self.__baseDirectory,
-        #             f'{self.__youtubeObject.title}.mp4'), max_retries=5)
 
         options = {
             'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]',  # Baixa a melhor qualidade disponível (vídeo + áudio)
-            #'subtitleslangs': ['en'],  # Idioma das legendas (ex.: 'en' para inglês)
+            'subtitleslangs': ['pt-BR'],  # Idioma das legendas (ex.: 'en' para inglês)
             #'writeautomaticsub': False,  # Baixar legendas automáticas, se não houver manuais
             #'subtitlesformat': 'srt',  # Formato das legendas ('srt' ou 'vtt')
             'outtmpl': videoFileName,  # Caminho e nome do arquivo de saída
@@ -77,27 +69,6 @@ class YouTubeVideoHandler:
             ydl.download([self.videoLink])        
 
         return VideoFileClip(videoFileName)
-        #finalVideoClip : VideoFileClip  = None;     
-        #audioClip : AudioFileClip = None 
-        
-        #if insertAudio:
-        #    audioClip : AudioFileClip = self.downloadAudio()            
-        #    finalVideoClip = self.linkAudioToVideo(videoFileClip=videoClip, audioFileClip=audioClip)        
-        #else: 
-        #finalVideoClip = videoClip
-
-        #if saveFile:
-        #    finalVideoClip.write_videofile(finalVideoFileName, audio_codec='libmp3lame')
-
-        #if audioClip:
-        #    self.removeAudioFile(audioClip)
-                
-        
-        #if saveFile:
-        #    videoClip.close()
-        #    os.remove(videoFileName)
-            
-        #return finalVideoClip
     
     def removeAudioFile(self, audioFileClip: AudioFileClip):
         audioFileClip.close()

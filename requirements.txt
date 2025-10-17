@@ -39,4 +39,4 @@ uritemplate==3.0.1
 urllib3==1.26.16
 Werkzeug==2.3.7
 youtube-transcript-api==0.6.1
-yt-dlp==2024.12.3
+yt-dlp==2025.10.14
