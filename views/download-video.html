@@ -23,6 +23,8 @@
    <div class="container">
       <label>Inform the youtube video link</label>
       <input class="form-control" type="text" id="youtubelink">
+      <label>Inform the directory to save</label>
+      <input class="form-control" type="text" id="directory">
    </div>
    <div class="container" style="margin-top: 15px;">
        <div class="card">
@@ -48,6 +50,7 @@
     </div>
   </div>
   
+  
 {% endblock %}
 
 {% block scripts %}
@@ -66,7 +69,8 @@
         loadingModal.toggle();
         return;
        }
-       bodyRequest = {"link": link, "refresh": true};
+       let directory = document.querySelector("#directory").value;
+       bodyRequest = {"link": link, "refresh": true, "directory": directory};
        const response = await fetch('/download', {
         method: 'POST',
         headers: {
@@ -88,6 +92,9 @@
        });
 
     }
+
+   
+
 </script>   
 {% endblock %}
 

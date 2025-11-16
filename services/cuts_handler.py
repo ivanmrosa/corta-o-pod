@@ -75,7 +75,8 @@ class CutsHandler:
         return json.loads(data)
     
     def savePreparedCuts(self, cuts: list[dict]):
-        with open(os.path.join(self.__videoDir, 'cutsdb.json'), 'w') as f:
+        mode = "w" if  os.path.exists(os.path.join(self.__videoDir, 'cutsdb.json')) else "x"
+        with open(os.path.join(self.__videoDir, 'cutsdb.json'), mode) as f:
             f.write(json.dumps(cuts))
 
     def retrieveAudioFromLocalStorage(self) -> AudioFileClip:

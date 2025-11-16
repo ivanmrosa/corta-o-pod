@@ -20,7 +20,7 @@ class DownloadController(MethodView):
     
     def post(self) -> Response:
         data = json.loads(request.data)      
-        handler = CutsHandler(self.dir, data["link"])
+        handler = CutsHandler(data["directory"] if "directory" in data and data["directory"] else self.dir, data["link"])
         refresh = 'refresh' in data and data['refresh']
         
         alreadySavedMeta = CutsHandler.retriveMetadatas(handler.getVideoDirectory())
